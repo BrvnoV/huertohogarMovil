@@ -51,7 +51,7 @@ sealed class CartUiEvent {
 
 class CartViewModel(
     private val repository: AppRepository,
-    private val sessionManager: SessionManager
+    private val sessionManager:SessionManager
 ) : ViewModel() {
 
     private val _eventFlow = MutableSharedFlow<CartUiEvent>()

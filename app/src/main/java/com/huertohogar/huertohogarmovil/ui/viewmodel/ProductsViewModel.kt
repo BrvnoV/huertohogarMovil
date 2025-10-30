@@ -31,7 +31,7 @@ sealed class ProductsUiEvent {
 
 class ProductsViewModel(
     private val repository: AppRepository,
-    private val sessionManager: com.google.android.gms.cast.framework.SessionManager
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
     // Flujo de todos los productos

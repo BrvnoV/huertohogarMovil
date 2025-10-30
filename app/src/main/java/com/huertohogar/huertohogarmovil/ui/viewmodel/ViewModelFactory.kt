@@ -4,6 +4,7 @@ package com.huertohogar.huertohogarmovil.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.huertohogar.huertohogarmovil.data.repository.AppRepository
+import com.huertohogar.huertohogarmovil.repository.SessionManager
 
 
 /**
@@ -13,7 +14,7 @@ import com.huertohogar.huertohogarmovil.data.repository.AppRepository
  */
 class ViewModelFactory(
     private val repository: AppRepository,
-    private val sessionManager: com.google.android.gms.cast.framework.SessionManager
+    private val sessionManager: SessionManager
 ) : ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {

@@ -27,7 +27,7 @@ sealed class ProfileEvent {
 
 class ProfileViewModel(
     private val repository: AppRepository,
-    private val sessionManager: com.google.android.gms.cast.framework.SessionManager
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileState())

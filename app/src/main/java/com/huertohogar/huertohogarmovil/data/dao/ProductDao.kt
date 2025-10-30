@@ -4,31 +4,36 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.huertohogar.huertohogarmovil.data.model.Producto
+import com.huertohogar.model.Producto
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ProductoDao {
 
-    // Obtiene TODOS los productos de la tabla
-    // Usamos Flow para que la lista de productos se actualice sola si hay cambios.
+    /**
+     * Obtiene todos los productos de la base de datos.
+     * Devuelve un Flow para que la UI se actualice automáticamente.
+     */
     @Query("SELECT * FROM productos")
     fun getAllProductos(): Flow<List<Producto>>
 
-    // Inserta una lista de productos (para la carga inicial de datos)
-    // Si un producto con el mismo ID ya existe, lo reemplaza.
+    /**
+     * Obtiene un producto específico por su ID.
+     */
+    @Query("SELECT * FROM productos WHERE id = :productoId")
+    fun getProductoById(productoId: String): Flow<Producto?>
+
+    /**
+     * Inserta una lista de productos.
+     * Si un producto ya existe (misma ID), se reemplaza.
+     * Útil para pre-cargar la base de datos.
+     */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(productos: List<Producto>)
 
-    // Obtiene un producto específico por su ID
-    @Query("SELECT * FROM productos WHERE id = :id")
-    fun getProductoById(id: Int): Flow<Producto?>
-
-    // (Opcional) Contar productos, para saber si necesitamos hacer la carga inicial
-    @Query("SELECT COUNT(*) FROM productos")
-    suspend fun countProductos(): Int
-
-    // (Opcional) Borrar todos los productos (para pruebas)
-    @Query("DELETE FROM productos")
-    suspend fun deleteAll()
+    /**
+     * Inserta un solo producto.
+     */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertProducto(producto: Producto)
 }

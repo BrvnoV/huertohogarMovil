@@ -1,33 +1,62 @@
-package com.huertohogar.huertohogarmovil.data.model
+package com.huertohogar.model
 
 import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-// Entidad para la tabla de Usuarios
+/**
+ * Entidad que representa a un usuario en la base de datos.
+ */
 @Entity(tableName = "usuarios")
 data class Usuario(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    val username: String,
-    val pass: String, // En una app real, esto debería estar hasheado.
     val nombre: String,
-    val direccion: String,
-    // Guardaremos la latitud y longitud obtenidas del GPS
-    val latitud: Double? = null,
-    val longitud: Double? = null,
-    // Guardaremos la URI de la imagen de perfil como un String
-    val imagenPerfilUri: String? = null
+    val email: String,
+    val passwordHash: String // Almacenar un hash, no texto plano
 )
 
-// Entidad para la tabla de Productos
+/**
+ * Entidad que representa un producto.
+ * Usamos los datos reales que proporcionaste.
+ */
 @Entity(tableName = "productos")
 data class Producto(
+    @PrimaryKey
+    val id: String, // Usaremos IDs de texto (ej: "1", "2", etc.)
+    val name: String,
+    val description: String,
+    val price: Int,
+    val imageUrl: String
+)
+
+/**
+ * Entidad para el carrito de compras.
+ * Relaciona un usuario con un producto y una cantidad.
+ */
+@Entity(
+    tableName = "carrito_items",
+    foreignKeys = [
+        ForeignKey(
+            entity = Usuario::class,
+            parentColumns = ["id"],
+            childColumns = ["userId"],
+            onDelete = ForeignKey.CASCADE
+        ),
+        ForeignKey(
+            entity = Producto::class,
+            parentColumns = ["id"],
+            childColumns = ["productId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
+    indices = [Index("userId"), Index("productId")]
+)
+data class CarritoItem(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    val nombre: String,
-    val descripcion: String,
-    val precio: Double,
-    // Añadiremos un campo para una URL o nombre de imagen (para mostrar en la app)
-    // Usaremos un nombre de drawable simple por ahora.
-    val imagenNombre: String
+    val userId: Int,
+    val productId: String,
+    val quantity: Int
 )

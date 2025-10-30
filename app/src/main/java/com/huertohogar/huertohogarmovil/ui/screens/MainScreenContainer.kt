@@ -1,90 +1,199 @@
 package com.huertohogar.huertohogarmovil.ui.screens
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.navigation.NavController
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.huertohogar.huertohogarmovil.ui.navigation.BottomNavigationItem
+import androidx.navigation.navigation
 
-/**
- * Este es el contenedor principal de la app después del login.
- * Alberga la navegación inferior (BottomBar) y las pantallas principales.
- */
-@OptIn(ExperimentalMaterial3Api::class)
+
+// --- Definición de Rutas de Navegación ---
+
+object Graph {
+    const val AUTHENTICATION = "auth_graph"
+    const val MAIN = "main_graph"
+}
+
+sealed class AuthScreen(val route: String) {
+    object Login : AuthScreen("login")
+    object Register : AuthScreen("register")
+}
+
+sealed class MainScreen(val route: String, val label: String, val icon: ImageVector) {
+    object Home : MainScreen("home", "Inicio", Icons.Default.Home)
+    object Products : MainScreen("products", "Productos", Icons.Default.List)
+    object Cart : MainScreen("cart", "Carrito", Icons.Default.ShoppingCart)
+    object Profile : MainScreen("profile", "Perfil", Icons.Default.Person)
+}
+
+val bottomNavItems = listOf(
+    MainScreen.Home,
+    MainScreen.Products,
+    MainScreen.Cart,
+    MainScreen.Profile
+)
+
+// --- Grafo de Navegación Principal de la App ---
+
 @Composable
-fun MainScreenContainer(userId: String) {
-    // Este es el NavController para la navegación INFERIOR (Home, Products, etc.)
-    val bottomNavController = rememberNavController()
-
-    Scaffold(
-        bottomBar = {
-            NavigationBar {
-                val navBackStackEntry by bottomNavController.currentBackStackEntryAsState()
-                val currentDestination = navBackStackEntry?.destination
-
-                // Itera sobre los items definidos en BottomNavItems.kt
-                BottomNavigationItem.items.forEach { screen ->
-                    NavigationBarItem(
-                        icon = { Icon(screen.icon, contentDescription = screen.title) },
-                        label = { Text(screen.title) },
-                        selected = currentDestination?.route == screen.route,
-                        onClick = {
-                            bottomNavController.navigate(screen.route) {
-                                // Pop up to the start destination of the graph to
-                                // avoid building up a large stack of destinations
-                                // on the back stack as users select items
-                                popUpTo(bottomNavController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-                                // Evita múltiples copias del mismo destino
-                                launchSingleTop = true
-                                // Restaura el estado al re-seleccionar
-                                restoreState = true
-                            }
+fun AppNavigationGraph(
+    navController: NavHostController = rememberNavController(),
+    startDestination: String = Graph.AUTHENTICATION // O Graph.MAIN si el usuario ya está logueado
+) {
+    NavHost(
+        navController = navController,
+        startDestination = startDestination
+    ) {
+        // Grafo de Autenticación
+        navigation(
+            route = Graph.AUTHENTICATION,
+            startDestination = AuthScreen.Login.route
+        ) {
+            composable(AuthScreen.Login.route) {
+                LoginRoute(
+                    onLoginSuccess = {
+                        navController.navigate(Graph.MAIN) {
+                            // Limpia el backstack de autenticación
+                            popUpTo(Graph.AUTHENTICATION) { inclusive = true }
                         }
-                    )
-                }
+                    },
+                    onNavigateToRegister = {
+                        navController.navigate(AuthScreen.Register.route)
+                    }
+                )
+            }
+            composable(AuthScreen.Register.route) {
+                RegisterRoute(
+                    onRegisterSuccess = {
+                        navController.navigate(AuthScreen.Login.route) {
+                            // Vuelve a login después de registrarse
+                            popUpTo(AuthScreen.Login.route) { inclusive = true }
+                        }
+                    },
+                    onNavigateToLogin = {
+                        navController.popBackStack()
+                    }
+                )
             }
         }
-    ) { innerPadding ->
-        // Este NavHost es para el contenido de las pantallas de la barra inferior
-        NavHost(
-            navController = bottomNavController,
-            // La ruta inicial de la barra inferior
-            startDestination = BottomNavigationItem.Home.route,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding) // Aplica el padding del Scaffold
-        ) {
-            // Rutas para cada item de la barra inferior
-            // Pasamos el userId a las pantallas que lo necesiten (ej. Perfil)
-            composable(BottomNavigationItem.Home.route) {
-                HomeScreen()
-            }
-            composable(BottomNavigationItem.Products.route) {
-                ProductsScreen()
-            }
-            composable(BottomNavigationItem.Cart.route) {
-                CartScreen()
-            }
-            composable(BottomNavigationItem.Profile.route) {
-                // La pantalla de perfil sí necesita saber qué usuario es
-                ProfileScreen(userId = userId)
-            }
+
+        // Grafo Principal de la App (con Bottom Bar)
+        composable(route = Graph.MAIN) {
+            MainScreenContainer()
         }
     }
 }
 
+
+// --- Contenedor de la Pantalla Principal (con Scaffold y Bottom Bar) ---
+
+@Composable
+fun MainScreenContainer() {
+    val navController = rememberNavController()
+    Scaffold(
+        bottomBar = {
+            BottomNavigationBar(navController = navController)
+        }
+    ) { innerPadding ->
+        MainNavigationGraph(
+            navController = navController,
+            padding = innerPadding
+        )
+    }
+}
+
+// --- Grafo de Navegación para las pantallas INTERNAS (Home, Products, etc.) ---
+
+@Composable
+fun MainNavigationGraph(
+    navController: NavHostController,
+    padding: PaddingValues
+) {
+    NavHost(
+        navController = navController,
+        startDestination = MainScreen.Home.route,
+        modifier = Modifier.padding(padding)
+    ) {
+        composable(MainScreen.Home.route) {
+            HomeRoute(
+                onNavigateToProductDetails = { productId ->
+                    // Ejemplo de navegación a detalles (requiere crear la ruta)
+                    // navController.navigate("productDetails/$productId")
+                }
+            )
+        }
+        composable(MainScreen.Products.route) {
+            ProductsRoute(
+                onNavigateToProductDetails = { productId ->
+                    // navController.navigate("productDetails/$productId")
+                }
+            )
+        }
+        composable(MainScreen.Cart.route) {
+            CartRoute(
+                onNavigateToCheckout = {
+                    // navController.navigate("checkout")
+                }
+            )
+        }
+        composable(MainScreen.Profile.route) {
+            ProfileRoute(
+                onNavigateToLogin = {
+                    // Esto requeriría un NavController de más alto nivel
+                    // Por ahora, no hace nada, pero en una app real
+                    // notificaría al AppNavigationGraph para volver a Auth.
+                }
+            )
+        }
+        // Aquí irían más pantallas como ProductDetailsScreen, CheckoutScreen, etc.
+    }
+}
+
+// --- Composable para la Barra de Navegación Inferior ---
+
+@Composable
+fun BottomNavigationBar(navController: NavController) {
+    NavigationBar {
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentDestination = navBackStackEntry?.destination
+
+        bottomNavItems.forEach { screen ->
+            NavigationBarItem(
+                icon = { Icon(screen.icon, contentDescription = screen.label) },
+                label = { Text(screen.label) },
+                selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                onClick = {
+                    navController.navigate(screen.route) {
+                        // Pop up to the start destination of the graph to
+                        // avoid building up a large stack of destinations
+                        // on the back stack as users select items
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        // Avoid multiple copies of the same destination when
+                        // re-selecting the same item
+                        launchSingleTop = true
+                        // Restore state when re-selecting a previously selected item
+                        restoreState = true
+                    }
+                }
+            )
+        }
+    }
+}

@@ -1,115 +1,127 @@
 package com.huertohogar.huertohogarmovil.ui.screens
 
+
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.huertohogar.huertohogarmovil.data.model.Usuario
-import com.huertohogar.huertohogarmovil.ui.components.ErrorText
-import com.huertohogar.huertohogarmovil.ui.components.LoadingIndicator
-import com.huertohogar.huertohogarmovil.ui.components.PasswordTextField
-import com.huertohogar.huertohogarmovil.ui.components.StandardTextField
-import com.huertohogar.huertohogarmovil.ui.viewmodel.LoginViewModel
+// import androidx.lifecycle.viewmodel.compose.viewModel
+// import com.huertohogar.login.LoginViewModel
+// import com.huertohogar.login.LoginState
+// import com.huertohogar.login.LoginEvent
 
+/**
+ * Versión "inteligente" (stateful) que se conecta al ViewModel.
+ * Esta es la pantalla que se llama desde el grafo de navegación.
+ */
+@Composable
+fun LoginRoute(
+    onLoginSuccess: () -> Unit,
+    onNavigateToRegister: () -> Unit,
+    // viewModel: LoginViewModel = viewModel() // Descomentar al integrar ViewModel
+) {
+    // val uiState by viewModel.uiState.collectAsState() // Descomentar
+
+    // Estado de ejemplo para el prototipo
+    var email by rememberSaveable { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
+    val isLoading = false
+    val error: String? = null
+
+    LoginScreen(
+        email = email,
+        password = password,
+        isLoading = isLoading,
+        error = error,
+        onEmailChange = { email = it },
+        onPasswordChange = { password = it },
+        onLoginClick = {
+            // Aquí se llamaría a viewModel.onEvent(LoginEvent.OnLoginClick)
+            // Simulación de éxito:
+            onLoginSuccess()
+        },
+        onRegisterClick = onNavigateToRegister
+    )
+}
+
+/**
+ * Versión "tonta" (stateless) que solo muestra la UI.
+ */
 @Composable
 fun LoginScreen(
-    // Acción para navegar a la pantalla de registro
+    email: String,
+    password: String,
+    isLoading: Boolean,
+    error: String?,
+    onEmailChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
+    onLoginClick: () -> Unit,
     onRegisterClick: () -> Unit,
-    // Acción que se ejecuta cuando el login es exitoso
-    onLoginSuccess: (Usuario) -> Unit,
-    // Instancia del ViewModel
-    viewModel: LoginViewModel = viewModel()
+    modifier: Modifier = Modifier
 ) {
-    // Observamos el estado del usuario logueado
-    val loggedInUser = viewModel.loggedInUser
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "Bienvenido a Huerto Hogar",
+            style = MaterialTheme.typography.headlineMedium
+        )
+        Spacer(modifier = Modifier.height(32.dp))
 
-    // Si el usuario logueado cambia (de null a un Usuario),
-    // ejecutamos la acción de login exitoso.
-    LaunchedEffect(loggedInUser) {
-        loggedInUser?.let {
-            onLoginSuccess(it)
-        }
-    }
+        OutlinedTextField(
+            value = email,
+            onValueChange = onEmailChange,
+            label = { Text("Correo Electrónico") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(16.dp))
 
-    Scaffold { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 32.dp), // Padding lateral
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        OutlinedTextField(
+            value = password,
+            onValueChange = onPasswordChange,
+            label = { Text("Contraseña") },
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(24.dp))
 
-            Text(
-                text = "Huerto Hogar",
-                style = MaterialTheme.typography.headlineLarge,
-                modifier = Modifier.padding(bottom = 32.dp)
-            )
-
-            // Campo de Usuario
-            StandardTextField(
-                value = viewModel.username,
-                onValueChange = {
-                    viewModel.username = it
-                    viewModel.clearError()
-                },
-                label = "Usuario (huerto)",
-                isError = viewModel.loginError != null,
-                keyboardType = KeyboardType.Text
-            )
-
-            // Campo de Contraseña
-            PasswordTextField(
-                value = viewModel.password,
-                onValueChange = {
-                    viewModel.password = it
-                    viewModel.clearError()
-                },
-                label = "Contraseña (123123)",
-                isError = viewModel.loginError != null
-            )
-
-            // Espaciador
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Mostramos el indicador de carga o el botón de login
-            if (viewModel.isLoading) {
-                LoadingIndicator()
-            } else {
-                // Mostramos el mensaje de error si existe
-                viewModel.loginError?.let {
-                    ErrorText(error = it)
-                }
-
-                Button(
-                    onClick = { viewModel.login() },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Iniciar Sesión")
-                }
-            }
-
-            // Botón para ir a Registro
-            TextButton(
-                onClick = onRegisterClick,
-                modifier = Modifier.padding(top = 16.dp)
+        if (isLoading) {
+            CircularProgressIndicator()
+        } else {
+            Button(
+                onClick = onLoginClick,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    text = "¿No tienes cuenta? Regístrate aquí",
-                    textAlign = TextAlign.Center
-                )
+                Text("Iniciar Sesión")
             }
+        }
+
+        if (error != null) {
+            Text(
+                text = error,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+        TextButton(onClick = onRegisterClick) {
+            Text("¿No tienes cuenta? Regístrate aquí")
         }
     }
 }

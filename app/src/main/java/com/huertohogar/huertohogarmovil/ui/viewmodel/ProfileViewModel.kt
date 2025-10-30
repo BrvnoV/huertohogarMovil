@@ -16,13 +16,13 @@ data class ProfileState(
     val isLoading: Boolean = true,
     val userName: String = "",
     val userEmail: String = "",
-    val error: String? = null // <-- Añadido para mejor manejo de errores
+    val error: String? = null //
 )
 
 // Eventos
 sealed class ProfileEvent {
     object OnLogoutClick : ProfileEvent()
-    object OnErrorShown : ProfileEvent() // <-- Añadido para limpiar errores
+    object OnErrorShown : ProfileEvent()
 }
 
 class ProfileViewModel(

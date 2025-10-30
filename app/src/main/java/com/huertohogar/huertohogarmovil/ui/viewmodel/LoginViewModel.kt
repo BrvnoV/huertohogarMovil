@@ -1,70 +1,72 @@
 package com.huertohogar.huertohogarmovil.ui.viewmodel
 
-import android.app.Application
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.huertohogar.huertohogarmovil.data.model.Usuario
 import com.huertohogar.huertohogarmovil.data.repository.AppRepository
-import kotlinx.coroutines.Dispatchers
+import com.huertohogar.huertohogarmovil.repository.SessionManager
+
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class LoginViewModel(application: Application) : AndroidViewModel(application) {
+// Estado de la UI de Login
+data class LoginState(
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val loginSuccess: Boolean = false
+)
 
-    // Instancia del repositorio
-    private val repository = AppRepository(application)
+// Eventos que la UI puede enviar al ViewModel
+sealed class LoginEvent {
+    data class OnLoginClick(val email: String, val pass: String) : LoginEvent()
+    object OnErrorShown : LoginEvent()
+}
 
-    // --- Estado de la UI (manejado por Compose) ---
+class LoginViewModel(
+    private val repository: AppRepository,
+    private val sessionManager: SessionManager
+) : ViewModel() {
 
-    // Campos del formulario
-    var username by mutableStateOf("")
-    var password by mutableStateOf("")
+    private val _uiState = MutableStateFlow(LoginState())
+    val uiState: StateFlow<LoginState> = _uiState.asStateFlow()
 
-    // Estado de la operación de login
-    var isLoading by mutableStateOf(false)
-    var loginError by mutableStateOf<String?>(null)
-
-    /**
-     * El usuario que ha iniciado sesión.
-     * La UI observará esto: si no es null, significa que el login fue exitoso
-     * y podemos navegar a la pantalla principal.
-     */
-    var loggedInUser by mutableStateOf<Usuario?>(null)
-
-    // --- Lógica de Negocio ---
-
-    /**
-     * Intenta iniciar sesión.
-     * Se ejecuta en un hilo de fondo (IO) para no bloquear la UI.
-     */
-    fun login() {
-        viewModelScope.launch(Dispatchers.IO) {
-            isLoading = true
-            loginError = null
-            try {
-                val user = repository.login(username, password)
-                if (user != null) {
-                    // ¡Éxito! Actualizamos el estado con el usuario
-                    loggedInUser = user
-                } else {
-                    // Falla: Credenciales incorrectas
-                    loginError = "Usuario o contraseña incorrecta."
-                }
-            } catch (e: Exception) {
-                // Falla: Error inesperado (ej. DB)
-                loginError = "Error al intentar iniciar sesión: ${e.message}"
-            } finally {
-                isLoading = false
+    fun onEvent(event: LoginEvent) {
+        when (event) {
+            is LoginEvent.OnLoginClick -> {
+                login(event.email, event.pass)
+            }
+            is LoginEvent.OnErrorShown -> {
+                _uiState.update { it.copy(error = null) }
             }
         }
     }
 
-    /**
-     * Limpia el mensaje de error (ej. cuando el usuario vuelve a escribir)
-     */
-    fun clearError() {
-        loginError = null
+    private fun login(email: String, pass: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+
+            // --- 5. CORRECCIÓN LÓGICA: Usar .firstOrNull() en lugar de .collect() ---
+            // Obtenemos el primer (y único) usuario que coincida
+            val usuario = repository.getUsuarioByEmail(email).firstOrNull()
+
+            if (usuario == null) {
+                _uiState.update { it.copy(isLoading = false, error = "Usuario no encontrado") }
+            } else {
+                // --- 6. CORRECCIÓN LÓGICA: Comparar con passwordHash ---
+                // (Tu usuario de prueba tiene "huerto@hogar.com" y "123123" como hash)
+                if (pass == usuario.passwordHash) {
+
+                    // --- 7. CORRECCIÓN LÓGICA: Guardar sesión ---
+                    sessionManager.login(usuario.id) // <-- Guardamos el ID del usuario
+
+                    _uiState.update { it.copy(isLoading = false, loginSuccess = true) }
+                } else {
+                    _uiState.update { it.copy(isLoading = false, error = "Contraseña incorrecta") }
+                }
+            }
+        }
     }
 }

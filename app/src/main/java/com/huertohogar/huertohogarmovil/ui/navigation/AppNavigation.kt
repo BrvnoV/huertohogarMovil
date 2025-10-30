@@ -1,90 +1,111 @@
 package com.huertohogar.huertohogarmovil.ui.navigation
 
+import com.huertohogar.huertohogarmovil.ui.screens.CartRoute
+import com.huertohogar.huertohogarmovil.ui.screens.HomeRoute
+import com.huertohogar.huertohogarmovil.ui.screens.LoginRoute
+import com.huertohogar.huertohogarmovil.ui.screens.MainScreenContainer
+import com.huertohogar.huertohogarmovil.ui.screens.ProductsRoute
+import com.huertohogar.huertohogarmovil.ui.screens.ProfileRoute
+import com.huertohogar.huertohogarmovil.ui.screens.RegisterRoute
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.huertohogar.huertohogarmovil.data.model.Usuario
-import com.huertohogar.huertohogarmovil.ui.screens.LoginScreen
-import com.huertohogar.huertohogarmovil.ui.screens.MainScreenContainer
-import com.huertohogar.huertohogarmovil.ui.screens.RegisterScreen
+import androidx.navigation.navigation
 
-// --- Definición de Rutas ---
 
-/**
- * Rutas de navegación para la app.
- */
-object AppRoutes {
-    const val LOGIN = "login"
-    const val REGISTER = "register"
-    const val MAIN = "main/{userId}" // Ruta principal, requiere el ID del usuario
-
-    // Función helper para crear la ruta MAIN con el ID
-    fun mainRoute(userId: Int): String {
-        return "main/$userId"
-    }
-}
-
-// --- Grafo de Navegación (NavHost) ---
-
+// --- Grafo de Navegación Principal de la App ---
 @Composable
-fun AppNavigation() {
-    val navController = rememberNavController()
-
+fun AppNavigationGraph(
+    navController: NavHostController = rememberNavController(),
+    startDestination: String = Graph.AUTHENTICATION
+) {
     NavHost(
         navController = navController,
-        startDestination = AppRoutes.LOGIN // La app siempre empieza en el Login
+        startDestination = startDestination
     ) {
+        // Grafo de Autenticación
+        navigation(
+            route = Graph.AUTHENTICATION,
+            startDestination = AuthScreen.Login.route
+        ) {
+            composable(AuthScreen.Login.route) {
+                LoginRoute(
+                    onLoginSuccess = {
+                        navController.navigate(Graph.MAIN) {
+                            popUpTo(Graph.AUTHENTICATION) { inclusive = true }
+                        }
+                    },
+                    onNavigateToRegister = {
+                        navController.navigate(AuthScreen.Register.route)
+                    }
+                )
+            }
+            composable(AuthScreen.Register.route) {
+                RegisterRoute(
+                    onRegisterSuccess = {
+                        navController.navigate(AuthScreen.Login.route) {
+                            popUpTo(AuthScreen.Login.route) { inclusive = true }
+                        }
+                    },
+                    onNavigateToLogin = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+        }
 
-        /**
-         * Pantalla de Login
-         */
-        composable(AppRoutes.LOGIN) {
-            LoginScreen(
-                onRegisterClick = {
-                    // Navega a la pantalla de registro
-                    navController.navigate(AppRoutes.REGISTER)
-                },
-                onLoginSuccess = { usuario ->
-                    // Navega a la pantalla principal (Main) y limpia
-                    // el stack de navegación para que el usuario no pueda "volver" al login.
-                    navController.navigate(AppRoutes.mainRoute(usuario.id)) {
-                        popUpTo(AppRoutes.LOGIN) { inclusive = true }
+        // Grafo Principal de la App (con Bottom Bar)
+        composable(route = Graph.MAIN) {
+            // ADAPTACIÓN: Llamamos al MainScreenContainer y le pasamos el
+            // evento onLogout para que pueda navegar hacia atrás (al Auth Graph).
+            MainScreenContainer(
+                onLogout = {
+                    navController.navigate(Graph.AUTHENTICATION) {
+                        popUpTo(Graph.MAIN) { inclusive = true }
                     }
                 }
             )
         }
+    }
+}
 
-        /**
-         * Pantalla de Registro
-         */
-        composable(AppRoutes.REGISTER) {
-            RegisterScreen(
-                onBackToLogin = {
-                    // Vuelve a la pantalla de login
-                    navController.popBackStack()
-                }
+// --- Grafo de Navegación para las pantallas INTERNAS (Home, Products, etc.) ---
+@Composable
+fun MainNavigationGraph(
+    navController: NavHostController,
+    padding: PaddingValues,
+    onLogout: () -> Unit // ADAPTACIÓN: Recibe el evento de logout
+) {
+    NavHost(
+        navController = navController,
+        startDestination = MainScreen.Home.route,
+        modifier = Modifier.padding(padding)
+    ) {
+        composable(MainScreen.Home.route) {
+            HomeRoute(
+                onNavigateToProductDetails = { /* ... */ }
             )
         }
-
-        /**
-         * Pantalla Principal (Contenedor)
-         * Esta pantalla recibirá el ID del usuario como argumento.
-         * (La crearemos en el siguiente paso)
-         */
-        composable(AppRoutes.MAIN) { backStackEntry ->
-            // Extraemos el ID del usuario de la ruta
-            val userId = backStackEntry.arguments?.getString("userId")?.toIntOrNull()
-
-            if (userId != null) {
-                // Pasamos el ID del usuario a la pantalla principal
-                MainScreenContainer(userId = userId)
-            } else {
-                // Fallback: Si el ID es nulo, volver al login
-                navController.popBackStack(AppRoutes.LOGIN, inclusive = false)
-            }
+        composable(MainScreen.Products.route) {
+            ProductsRoute(
+                onNavigateToProductDetails = { /* ... */ }
+            )
+        }
+        composable(MainScreen.Cart.route) {
+            CartRoute(
+                onNavigateToCheckout = { /* ... */ }
+            )
+        }
+        composable(MainScreen.Profile.route) {
+            ProfileRoute(
+                // ADAPTACIÓN: Pasamos el evento de logout
+                onNavigateToLogin = onLogout
+            )
         }
     }
 }

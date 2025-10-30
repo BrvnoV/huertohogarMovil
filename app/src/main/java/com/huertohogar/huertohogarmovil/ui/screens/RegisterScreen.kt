@@ -1,21 +1,18 @@
 package com.huertohogar.huertohogarmovil.ui.screens
 
+import com.huertohogar.huertohogarmovil.ui.components.HuertoTextField
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-// import androidx.lifecycle.viewmodel.compose.viewModel
-// import com.huertohogar.register.RegisterViewModel
-// import com.huertohogar.register.RegisterState
-// import com.huertohogar.register.RegisterEvent
+
 
 @Composable
 fun RegisterRoute(
@@ -45,7 +42,7 @@ fun RegisterRoute(
         onPasswordChange = { password = it },
         onConfirmPasswordChange = { confirmPassword = it },
         onRegisterClick = {
-            // Aquí se llamaría a viewModel.onEvent(RegisterEvent.OnRegisterClick)
+            // viewModel.onEvent(RegisterEvent.OnRegisterClick(nombre, email, password, confirmPassword))
             // Simulación de éxito:
             onRegisterSuccess()
         },
@@ -83,45 +80,56 @@ fun RegisterScreen(
         )
         Spacer(modifier = Modifier.height(32.dp))
 
-        OutlinedTextField(
+        // --- ADAPTADO ---
+        HuertoTextField(
             value = nombre,
             onValueChange = onNombreChange,
-            label = { Text("Nombre Completo") },
-            singleLine = true,
+            label = "Nombre Completo",
+            imeAction = ImeAction.Next,
             modifier = Modifier.fillMaxWidth()
         )
+        // --- FIN ADAPTADO ---
+
         Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(
+        // --- ADAPTADO ---
+        HuertoTextField(
             value = email,
             onValueChange = onEmailChange,
-            label = { Text("Correo Electrónico") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            singleLine = true,
+            label = "Correo Electrónico",
+            keyboardType = KeyboardType.Email,
+            imeAction = ImeAction.Next,
             modifier = Modifier.fillMaxWidth()
         )
+        // --- FIN ADAPTADO ---
+
         Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(
+        // --- ADAPTADO ---
+        HuertoTextField(
             value = password,
             onValueChange = onPasswordChange,
-            label = { Text("Contraseña") },
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            singleLine = true,
+            label = "Contraseña",
+            keyboardType = KeyboardType.Password,
+            imeAction = ImeAction.Next,
             modifier = Modifier.fillMaxWidth()
         )
+        // --- FIN ADAPTADO ---
+
         Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(
+        // --- ADAPTADO ---
+        HuertoTextField(
             value = confirmPassword,
             onValueChange = onConfirmPasswordChange,
-            label = { Text("Confirmar Contraseña") },
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            singleLine = true,
+            label = "Confirmar Contraseña",
+            keyboardType = KeyboardType.Password,
+            imeAction = ImeAction.Done,
+            onImeAction = onRegisterClick,
             modifier = Modifier.fillMaxWidth()
         )
+        // --- FIN ADAPTADO ---
+
         Spacer(modifier = Modifier.height(24.dp))
 
         if (isLoading) {
@@ -130,7 +138,6 @@ fun RegisterScreen(
             Button(
                 onClick = onRegisterClick,
                 modifier = Modifier.fillMaxWidth()
-                // enabled = !isLoading && password == confirmPassword && password.isNotBlank()
             ) {
                 Text("Registrarse")
             }

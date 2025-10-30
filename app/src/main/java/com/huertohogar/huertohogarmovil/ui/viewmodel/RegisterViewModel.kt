@@ -1,86 +1,81 @@
 package com.huertohogar.huertohogarmovil.ui.viewmodel
 
-import android.app.Application
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.AndroidViewModel
+
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.huertohogar.huertohogarmovil.data.model.Usuario
 import com.huertohogar.huertohogarmovil.data.repository.AppRepository
-import kotlinx.coroutines.Dispatchers
+import com.huertohogar.model.Usuario
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class RegisterViewModel(application: Application) : AndroidViewModel(application) {
+// Estado de la UI de Registro
+data class RegisterState(
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val registerSuccess: Boolean = false
+)
 
-    // Instancia del repositorio
-    private val repository = AppRepository(application)
+// Eventos
+sealed class RegisterEvent {
+    data class OnRegisterClick(
+        val nombre: String,
+        val email: String,
+        val pass: String,
+        val confirmPass: String
+    ) : RegisterEvent()
+    object OnErrorShown : RegisterEvent()
+}
 
-    // --- Estado de la UI ---
+class RegisterViewModel(
+    private val repository: AppRepository
+) : ViewModel() {
 
-    // Campos del formulario
-    var username by mutableStateOf("")
-    var password by mutableStateOf("")
-    var confirmPassword by mutableStateOf("")
-    var nombre by mutableStateOf("")
-    var direccion by mutableStateOf("")
+    private val _uiState = MutableStateFlow(RegisterState())
+    val uiState: StateFlow<RegisterState> = _uiState.asStateFlow()
 
-    // Estado de la operación de registro
-    var isLoading by mutableStateOf(false)
-    var registerError by mutableStateOf<String?>(null)
-
-    /**
-     * Si el registro es exitoso, esto se pondrá en true.
-     * La UI observará este valor para navegar de vuelta al Login.
-     */
-    var registerSuccess by mutableStateOf(false)
-
-    // --- Lógica de Negocio ---
-
-    fun register() {
-        // Validación de campos vacíos
-        if (username.isBlank() || password.isBlank() || confirmPassword.isBlank() || nombre.isBlank() || direccion.isBlank()) {
-            registerError = "Todos los campos son obligatorios."
-            return
-        }
-
-        // Validación de contraseñas
-        if (password != confirmPassword) {
-            registerError = "Las contraseñas no coinciden."
-            return
-        }
-
-        // Inicia el proceso en un hilo de fondo
-        viewModelScope.launch(Dispatchers.IO) {
-            isLoading = true
-            registerError = null
-            try {
-                val newUser = Usuario(
-                    username = username.trim(),
-                    pass = password, // En una app real, hashear la contraseña
-                    nombre = nombre.trim(),
-                    direccion = direccion.trim()
-                )
-
-                // Intentamos registrar (el repo lanzará excepción si el usuario ya existe)
-                repository.register(newUser)
-
-                // ¡Éxito!
-                registerSuccess = true
-
-            } catch (e: Exception) {
-                // Falla: (Usuario ya existe, u otro error de BD)
-                registerError = e.message ?: "Error desconocido al registrar."
-            } finally {
-                isLoading = false
+    fun onEvent(event: RegisterEvent) {
+        when (event) {
+            is RegisterEvent.OnRegisterClick -> {
+                register(event.nombre, event.email, event.pass, event.confirmPass)
+            }
+            is RegisterEvent.OnErrorShown -> {
+                _uiState.update { it.copy(error = null) }
             }
         }
     }
 
-    /**
-     * Limpia el mensaje de error
-     */
-    fun clearError() {
-        registerError = null
+    private fun register(nombre: String, email: String, pass: String, confirmPass: String) {
+        if (pass != confirmPass) {
+            _uiState.update { it.copy(error = "Las contraseñas no coinciden") }
+            return
+        }
+        if (nombre.isBlank() || email.isBlank() || pass.isBlank()) {
+            _uiState.update { it.copy(error = "Todos los campos son obligatorios") }
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+
+            // Aquí iría la lógica para hashear la contraseña (ej: SHA-256)
+            val passHash = pass // Simulación
+
+            val nuevoUsuario = Usuario(
+                nombre = nombre,
+                email = email,
+                passwordHash = passHash
+            )
+
+            try {
+                repository.registerUsuario(nuevoUsuario)
+                _uiState.update { it.copy(isLoading = false, registerSuccess = true) }
+            } catch (e: Exception) {
+                // Capturar error (ej: email ya existe si hay una constraint UNIQUE)
+                _uiState.update { it.copy(isLoading = false, error = "No se pudo registrar: ${e.message}") }
+            }
+        }
     }
 }

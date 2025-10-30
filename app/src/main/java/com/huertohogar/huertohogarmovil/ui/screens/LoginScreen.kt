@@ -1,33 +1,24 @@
 package com.huertohogar.huertohogarmovil.ui.screens
 
-
+import com.huertohogar.huertohogarmovil.ui.components.HuertoTextField
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-// import androidx.lifecycle.viewmodel.compose.viewModel
-// import com.huertohogar.login.LoginViewModel
-// import com.huertohogar.login.LoginState
-// import com.huertohogar.login.LoginEvent
 
-/**
- * Versión "inteligente" (stateful) que se conecta al ViewModel.
- * Esta es la pantalla que se llama desde el grafo de navegación.
- */
+
 @Composable
 fun LoginRoute(
     onLoginSuccess: () -> Unit,
     onNavigateToRegister: () -> Unit,
-    // viewModel: LoginViewModel = viewModel() // Descomentar al integrar ViewModel
+    // viewModel: LoginViewModel = viewModel()
 ) {
-    // val uiState by viewModel.uiState.collectAsState() // Descomentar
+    // const val uiState by viewModel.uiState.collectAsState()
 
     // Estado de ejemplo para el prototipo
     var email by rememberSaveable { mutableStateOf("") }
@@ -43,7 +34,7 @@ fun LoginRoute(
         onEmailChange = { email = it },
         onPasswordChange = { password = it },
         onLoginClick = {
-            // Aquí se llamaría a viewModel.onEvent(LoginEvent.OnLoginClick)
+            // viewModel.onEvent(LoginEvent.OnLoginClick(email, password))
             // Simulación de éxito:
             onLoginSuccess()
         },
@@ -51,9 +42,6 @@ fun LoginRoute(
     )
 }
 
-/**
- * Versión "tonta" (stateless) que solo muestra la UI.
- */
 @Composable
 fun LoginScreen(
     email: String,
@@ -79,25 +67,31 @@ fun LoginScreen(
         )
         Spacer(modifier = Modifier.height(32.dp))
 
-        OutlinedTextField(
+        // --- ADAPTADO ---
+        HuertoTextField(
             value = email,
             onValueChange = onEmailChange,
-            label = { Text("Correo Electrónico") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            singleLine = true,
+            label = "Correo Electrónico",
+            keyboardType = KeyboardType.Email,
+            imeAction = ImeAction.Next,
             modifier = Modifier.fillMaxWidth()
         )
+        // --- FIN ADAPTADO ---
+
         Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(
+        // --- ADAPTADO ---
+        HuertoTextField(
             value = password,
             onValueChange = onPasswordChange,
-            label = { Text("Contraseña") },
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            singleLine = true,
+            label = "Contraseña",
+            keyboardType = KeyboardType.Password,
+            imeAction = ImeAction.Done,
+            onImeAction = onLoginClick, // Ejecuta el login al presionar 'Done'
             modifier = Modifier.fillMaxWidth()
         )
+        // --- FIN ADAPTADO ---
+
         Spacer(modifier = Modifier.height(24.dp))
 
         if (isLoading) {

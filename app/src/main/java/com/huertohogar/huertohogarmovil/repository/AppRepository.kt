@@ -1,76 +1,80 @@
 package com.huertohogar.huertohogarmovil.data.repository
 
-import android.app.Application
-import com.huertohogar.huertohogarmovil.data.AppDatabase
+import com.huertohogar.huertohogarmovil.data.dao.CarritoDao
 import com.huertohogar.huertohogarmovil.data.dao.ProductoDao
 import com.huertohogar.huertohogarmovil.data.dao.UsuarioDao
-import com.huertohogar.huertohogarmovil.data.model.Usuario
+import com.huertohogar.model.CarritoItem
+import com.huertohogar.model.CarritoItemConDetalles
+import com.huertohogar.model.Producto
+import com.huertohogar.model.Usuario
 import kotlinx.coroutines.flow.Flow
 
 /**
- * Repositorio que maneja el acceso a datos desde la BD (Room) y
- * (en el futuro) desde servicios de red o hardware (GPS).
- *
- * Es la ÚNICA fuente de verdad para los ViewModels.
+ * Interfaz para el repositorio. Útil para Inyección de Dependencias y testing.
  */
-class AppRepository(application: Application) {
+interface AppRepository {
+    // --- Usuario ---
+    fun getUsuarioByEmail(email: String): Flow<Usuario?>
+    fun getUsuarioById(id: Int): Flow<Usuario?>
+    suspend fun registerUsuario(usuario: Usuario)
 
-    // Instanciamos la base de datos y los DAOs
-    private val database = AppDatabase.getInstance(application)
-    private val usuarioDao: UsuarioDao = database.usuarioDao()
-    private val productoDao: ProductoDao = database.productoDao()
+    // --- Producto ---
+    fun getAllProductos(): Flow<List<Producto>>
+    fun getProductoById(id: String): Flow<Producto?>
 
-    // --- API de Productos ---
+    // --- Carrito (ACTUALIZADO) ---
 
-    /**
-     * Expone la lista completa de productos como un Flow.
-     * La UI observará este Flow para actualizarse automáticamente.
-     */
-    val todosLosProductos = productoDao.getAllProductos()
-
-    // --- API de Usuarios (Login/Registro) ---
+    // fun getCarrito(userId: Int): Flow<List<CarritoItem>> // <-- Esta es la versión simple, la eliminamos
 
     /**
-     * Intenta loguear a un usuario. Retorna el Usuario si éxito, null si falla.
+     * Busca un item específico en el carrito de un usuario.
+     * Usado por ProductsViewModel.
      */
-    suspend fun login(username: String, pass: String): Usuario? {
-        return usuarioDao.getUser(username, pass)
-    }
+    fun getCarritoItem(userId: Int, productId: String): Flow<CarritoItem?> // <-- NUEVO
 
     /**
-     * Registra un nuevo usuario.
-     * Lanza una excepción (que el ViewModel manejará) si el username ya existe.
+     * Obtiene los items del carrito con todos los detalles del producto.
+     * Usado por CartViewModel.
      */
-    suspend fun register(usuario: Usuario) {
-        // Verificamos si el usuario ya existe
-        val existingUser = usuarioDao.getUserByUsername(usuario.username)
-        if (existingUser != null) {
-            throw Exception("El nombre de usuario '${usuario.username}' ya está en uso.")
-        }
-        // Si no existe, lo insertamos
-        usuarioDao.insertUser(usuario)
-    }
+    fun getCarritoConDetalles(userId: Int): Flow<List<CarritoItemConDetalles>> // <-- NUEVO
 
-    // --- API de Perfil de Usuario ---
+    suspend fun addItemAlCarrito(item: CarritoItem)
+    suspend fun updateItemEnCarrito(item: CarritoItem)
+    suspend fun removeItemDelCarrito(item: CarritoItem)
+    suspend fun clearCarrito(userId: Int)
+}
 
-    /**
-     * Obtiene los datos de un usuario por su ID como un Flow.
-     * Se usa para la pantalla de Perfil.
-     */
-    fun getUsuarioById(id: Int): Flow<Usuario?> {
-        return usuarioDao.getUserById(id)
-    }
+/**
+ * Implementación del repositorio.
+ * (En una app real, esto se proveería con Hilt/Dagger)
+ */
+class AppRepositoryImpl(
+    private val usuarioDao: UsuarioDao,
+    private val productoDao: ProductoDao,
+    private val carritoDao: CarritoDao
+) : AppRepository {
 
-    /**
-     * Actualiza los datos del usuario (foto de perfil, ubicación, etc.)
-     */
-    suspend fun actualizarUsuario(usuario: Usuario) {
-        usuarioDao.updateUser(usuario)
-    }
+    // --- Usuario ---
+    override fun getUsuarioByEmail(email: String): Flow<Usuario?> = usuarioDao.getUsuarioByEmail(email)
+    override fun getUsuarioById(id: Int): Flow<Usuario?> = usuarioDao.getUsuarioById(id)
+    override suspend fun registerUsuario(usuario: Usuario) = usuarioDao.insertUsuario(usuario)
 
-    // --- API de Ubicación (GPS) ---
+    // --- Producto ---
+    override fun getAllProductos(): Flow<List<Producto>> = productoDao.getAllProductos()
+    override fun getProductoById(id: String): Flow<Producto?> = productoDao.getProductoById(id)
 
-    // TODO: Más adelante implementaremos aquí la lógica para obtener
-    // la ubicación desde LocationService.
+    // --- Carrito (ACTUALIZADO) ---
 
+    // override fun getCarrito(userId: Int): Flow<List<CarritoItem>> = carritoDao.getCarritoDelUsuario(userId) // <-- ELIMINADO
+
+    override fun getCarritoItem(userId: Int, productId: String): Flow<CarritoItem?> = // <-- NUEVO
+        carritoDao.getCarritoItem(userId, productId)
+
+    override fun getCarritoConDetalles(userId: Int): Flow<List<CarritoItemConDetalles>> = // <-- NUEVO
+        carritoDao.getCarritoConDetalles(userId)
+
+    override suspend fun addItemAlCarrito(item: CarritoItem) = carritoDao.insertItem(item)
+    override suspend fun updateItemEnCarrito(item: CarritoItem) = carritoDao.updateItem(item)
+    override suspend fun removeItemDelCarrito(item: CarritoItem) = carritoDao.deleteItem(item)
+    override suspend fun clearCarrito(userId: Int) = carritoDao.clearCarrito(userId)
 }

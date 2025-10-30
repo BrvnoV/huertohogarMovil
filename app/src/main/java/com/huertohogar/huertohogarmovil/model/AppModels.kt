@@ -1,9 +1,11 @@
 package com.huertohogar.model
 
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import androidx.room.Relation
 
 /**
  * Entidad que representa a un usuario en la base de datos.
@@ -59,4 +61,15 @@ data class CarritoItem(
     val userId: Int,
     val productId: String,
     val quantity: Int
+)
+
+data class CarritoItemConDetalles(
+    @Embedded
+    val carritoItem: CarritoItem,
+
+    @Relation(
+        parentColumn = "productId",
+        entityColumn = "id"
+    )
+    val producto: Producto
 )

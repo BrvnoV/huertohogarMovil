@@ -2,19 +2,19 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Permiso para ubicación (GPS) -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
-    <!-- Permisos para Galería (en Android 13+ se usan permisos más granulares) -->
-    <!-- Para Android 12 y anteriores -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
-    <!-- Para Android 13+ -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
 
 
     <application
+        android:name=".HuertoHogarApp"
+
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"

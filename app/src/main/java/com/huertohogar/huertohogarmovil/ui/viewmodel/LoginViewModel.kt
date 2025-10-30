@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.huertohogar.huertohogarmovil.data.repository.AppRepository
 import com.huertohogar.huertohogarmovil.repository.SessionManager
-
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -48,19 +47,17 @@ class LoginViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
 
-            // --- 5. CORRECCIÓN LÓGICA: Usar .firstOrNull() en lugar de .collect() ---
             // Obtenemos el primer (y único) usuario que coincida
             val usuario = repository.getUsuarioByEmail(email).firstOrNull()
 
             if (usuario == null) {
                 _uiState.update { it.copy(isLoading = false, error = "Usuario no encontrado") }
             } else {
-                // --- 6. CORRECCIÓN LÓGICA: Comparar con passwordHash ---
-                // (Tu usuario de prueba tiene "huerto@hogar.com" y "123123" como hash)
+                // Comparamos con passwordHash
                 if (pass == usuario.passwordHash) {
 
-                    // --- 7. CORRECCIÓN LÓGICA: Guardar sesión ---
-                    sessionManager.login(usuario.id) // <-- Guardamos el ID del usuario
+                    // Guardamos sesión
+                    sessionManager.login(usuario.id)
 
                     _uiState.update { it.copy(isLoading = false, loginSuccess = true) }
                 } else {

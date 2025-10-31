@@ -1,12 +1,6 @@
 package com.huertohogar.huertohogarmovil.ui.navigation
 
-
-import com.huertohogar.huertohogarmovil.ui.screens.HomeRoute
-import com.huertohogar.huertohogarmovil.ui.screens.LoginRoute
 import com.huertohogar.huertohogarmovil.ui.screens.MainScreenContainer
-import com.huertohogar.huertohogarmovil.ui.screens.ProductsRoute
-import com.huertohogar.huertohogarmovil.ui.screens.ProfileRoute
-import com.huertohogar.huertohogarmovil.ui.screens.RegisterRoute
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -18,6 +12,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import com.huertohogar.huertohogarmovil.screens.cart.CartRoute
+import com.huertohogar.huertohogarmovil.screens.home.HomeRoute
+import com.huertohogar.huertohogarmovil.screens.login.LoginRoute
+import com.huertohogar.huertohogarmovil.screens.products.ProductsRoute
+import com.huertohogar.huertohogarmovil.screens.profile.ProfileRoute
+import com.huertohogar.huertohogarmovil.screens.register.RegisterRoute
 
 
 /**

@@ -1,31 +1,35 @@
-package com.huertohogar.huertohogarmovil.ui.screens
+package com.huertohogar.huertohogarmovil.screens.login
 
+
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
+import com.huertohogar.huertohogarmovil.R
 import com.huertohogar.huertohogarmovil.HuertoHogarApp
 import com.huertohogar.huertohogarmovil.ui.components.HuertoTextField
-import com.huertohogar.huertohogarmovil.ui.viewModelFactory
 import com.huertohogar.huertohogarmovil.ui.viewmodel.LoginEvent
 import com.huertohogar.huertohogarmovil.ui.viewmodel.LoginViewModel
 import com.huertohogar.huertohogarmovil.ui.viewmodel.ViewModelFactory
+// --- FIN DE IMPORTS ---
 
 @Composable
 fun LoginRoute(
     onLoginSuccess: () -> Unit,
     onNavigateToRegister: () -> Unit,
-    // Conectamos el ViewModel usando nuestra Factory
     factory: ViewModelFactory = viewModelFactory(),
     viewModel: LoginViewModel = viewModel(factory = factory)
 ) {
@@ -38,8 +42,9 @@ fun LoginRoute(
         }
     }
 
-    var email by rememberSaveable { mutableStateOf("huerto@hogar.com") } // Pre-cargado
-    var password by rememberSaveable { mutableStateOf("123123") } // Pre-cargado
+    // Usuario de prueba pre-cargado
+    var email by rememberSaveable { mutableStateOf("huerto@hogar.com") }
+    var password by rememberSaveable { mutableStateOf("123123") }
 
     LoginScreen(
         email = email,
@@ -68,14 +73,19 @@ fun LoginScreen(
     modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier.fillMaxSize()) {
-        // --- NUEVO: Fondo ---
-        AsyncImage(
-            model = "https://images.unsplash.com/photo-1593951033320-910a906d40da?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzOTU5M3wwfDF8c2VhcmNofDEzfHx2ZWdldGFibGUlMjBnYXJkZW58ZW58MHx8fHwxNzMwNTk1OTcxfDA&ixlib=rb-4.0.3&q=80&w=1080",
+
+        // --- ¡FONDO CORREGIDO! ---
+        // Usamos Image local, no AsyncImage
+        Image(
+            // Carga la imagen que pusiste en 'drawable'
+            painter = painterResource(id = R.drawable.login_background),
             contentDescription = "Fondo de huerto",
-            contentScale = ContentScale.Crop,
+            contentScale = ContentScale.Crop, // Rellena toda la pantalla
             modifier = Modifier.fillMaxSize()
         )
-        // Capa oscura semitransparente sobre la imagen
+        // --- FIN DE FONDO ---
+
+        // Capa oscura semitransparente sobre la imagen para legibilidad
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = Color.Black.copy(alpha = 0.5f)
@@ -90,18 +100,26 @@ fun LoginScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "Huerto Hogar",
-                style = MaterialTheme.typography.displayMedium,
-                color = Color.White
+
+            // --- ¡LOGO AÑADIDO! ---
+            Image(
+                // Carga el logo que pusiste en 'drawable'
+                painter = painterResource(id = R.drawable.intro_logo),
+                contentDescription = "Logo de Huerto Hogar",
+                modifier = Modifier
+                    .size(200.dp) // Ajusta el tamaño según tu logo
+                    .clip(CircleShape) // Opcional: para logos redondos
             )
-            Spacer(modifier = Modifier.height(32.dp))
+            // --- FIN DE LOGO ---
+
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Usamos Card para el formulario
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+                    // El fondo de la tarjeta es semi-transparente
+                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
                 )
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -132,7 +150,6 @@ fun LoginScreen(
                         Button(
                             onClick = onLoginClick,
                             modifier = Modifier.fillMaxWidth(),
-                            // Usamos el color 'Terracotta'
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.tertiary
                             )
@@ -157,4 +174,11 @@ fun LoginScreen(
             }
         }
     }
+}
+
+// --- FUNCIÓN AYUDANTE (HELPER) ---
+@Composable
+fun viewModelFactory(): ViewModelFactory {
+    val application = (LocalContext.current.applicationContext as HuertoHogarApp)
+    return ViewModelFactory(application.repository, application.sessionManager)
 }

@@ -24,8 +24,6 @@ interface AppRepository {
 
     // --- Carrito (ACTUALIZADO) ---
 
-    // fun getCarrito(userId: Int): Flow<List<CarritoItem>> // <-- Esta es la versión simple, la eliminamos
-
     /**
      * Busca un item específico en el carrito de un usuario.
      * Usado por ProductsViewModel.

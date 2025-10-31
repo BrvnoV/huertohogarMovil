@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 
 @Database(
     entities = [Usuario::class, Producto::class, CarritoItem::class], // <-- ADAPTADO
-    version = 1,
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -42,6 +42,7 @@ abstract class AppDatabase : RoomDatabase() {
                     "huerto_hogar_db"
                 )
                     .addCallback(RoomDatabaseCallback(context)) // Añadimos tu callback
+                    .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
                 instance
@@ -72,9 +73,8 @@ abstract class AppDatabase : RoomDatabase() {
             val testUser = Usuario(
                 email = "huerto@hogar.com", // Usamos email para el login
                 passwordHash = "123123", // En app real, hashear "123123"
-                nombre = "Usuario de Prueba"
+                nombre = "Naya"
             )
-            // Asumiendo que tu UsuarioDao tiene 'insertUsuario' como definimos
             usuarioDao.insertUsuario(testUser)
         }
 
@@ -82,20 +82,42 @@ abstract class AppDatabase : RoomDatabase() {
          * ADAPTADO: Inserta la lista inicial de productos usando el modelo Producto (id String, price Int, etc.)
          */
         suspend fun prePopulateProductos(productoDao: ProductoDao) {
-            // Adaptado para coincidir con el modelo Producto (id String, name, price Int, imageUrl)
+
+            // --- ¡LISTA ACTUALIZADA CON NOMBRES DE ARCHIVO! ---
+            // (Asegúrate de que estos nombres coincidan con los que pusiste en drawable)
             val productosIniciales = listOf(
-                Producto(id = "1", name = "Tomate Cherry (Bandeja 250g)", description = "Pequeños tomates dulces y jugosos...", price = 2490, imageUrl = "tomate_cherry.png"),
-                Producto(id = "2", name = "Lechuga Hidropónica Costina (Unidad)", description = "Lechuga fresca y crujiente...", price = 1390, imageUrl = "lechuga.png"),
-                Producto(id = "3", name = "Frutillas Orgánicas (Bandeja 500g)", description = "Selección de frutillas maduradas...", price = 3990, imageUrl = "frutillas.png"),
-                Producto(id = "4", name = "Planta de Albahaca Viva (Maceta)", description = "¡Cosecha tus propias hojas!...", price = 2990, imageUrl = "albahaca.png"),
-                Producto(id = "5", name = "Zanahorias (Manojo 500g)", description = "Manojo de zanahorias tiernas...", price = 1290, imageUrl = "zanahorias.png"),
-                Producto(id = "6", name = "Arándanos Premium (Bandeja 125g)", description = "Arándanos grandes y firmes...", price = 2190, imageUrl = "arandanos.png"),
-                Producto(id = "7", name = "Pimentón Rojo (Unidad)", description = "Pimentón rojo carnoso...", price = 1190, imageUrl = "pimenton_rojo.png"),
-                Producto(id = "8", name = "Palta Hass (Malla 1kg)", description = "Paltas (aguacates) Hass...", price = 5990, imageUrl = "palta.png"),
-                Producto(id = "9", name = "Limón Sutil (Malla 1kg)", description = "Limones sutiles (tipo lima)...", price = 2290, imageUrl = "limon_sutil.png"),
-                Producto(id = "10", name = "Zapallo Italiano (Zucchini)", description = "Zucchini tierno y versátil...", price = 990, imageUrl = "zapallo_italiano.png")
+                Producto(id = "1", name = "Tomate Cherry (Bandeja 250g)", description = "Pequeños tomates dulces...", price = 2490,
+                    imageName = "tomate_cherry"), // <-- Sin .jpg
+
+                Producto(id = "2", name = "Lechuga Hidropónica Costina (Unidad)", description = "Lechuga fresca y crujiente...", price = 1390,
+                    imageName = "lechuga"), // <-- Sin .png
+
+                Producto(id = "3", name = "Frutillas Orgánicas (Bandeja 500g)", description = "Selección de frutillas maduradas...", price = 3990,
+                    imageName = "frutillas"),
+
+                Producto(id = "4", name = "Planta de Albahaca Viva (Maceta)", description = "¡Cosecha tus propias hojas!...", price = 2990,
+                    imageName = "albahaca"),
+
+                Producto(id = "5", name = "Zanahorias (Manojo 500g)", description = "Manojo de zanahorias tiernas...", price = 1290,
+                    imageName = "zanahorias"),
+
+                Producto(id = "6", name = "Arándanos Premium (Bandeja 125g)", description = "Arándanos grandes y firmes...", price = 2190,
+                    imageName = "arandanos"),
+
+                Producto(id = "7", name = "Pimentón Rojo (Unidad)", description = "Pimentón rojo carnoso...", price = 1190,
+                    imageName = "pimenton_rojo"),
+
+                Producto(id = "8", name = "Palta Hass (Malla 1kg)", description = "Paltas (aguacates) Hass...", price = 5990,
+                    imageName = "palta_hass"),
+
+                Producto(id = "9", name = "Limón Sutil (Malla 1kg)", description = "Limones sutiles (tipo lima)...", price = 2290,
+                    imageName = "limon"),
+
+                Producto(id = "10", name = "Zapallo Italiano (Zucchini)", description = "Zucchini tierno y versátil...", price = 990,
+                    imageName = "zapallo_italiano")
             )
-            // Asumiendo que tu ProductoDao tiene 'insertAll' como definimos
+            // --- FIN DE LA LISTA ---
+
             productoDao.insertAll(productosIniciales)
         }
     }

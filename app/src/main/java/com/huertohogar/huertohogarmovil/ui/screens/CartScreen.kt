@@ -1,6 +1,7 @@
 package com.huertohogar.huertohogarmovil.screens.cart
 
 import android.widget.Toast
+import androidx.compose.foundation.Image // <-- Importado
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,38 +16,39 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color // <-- Importado
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource // <-- Importado
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.huertohogar.huertohogarmovil.HuertoHogarApp
-
+import com.huertohogar.huertohogarmovil.R //
 import com.huertohogar.huertohogarmovil.ui.viewmodel.CartEvent
 import com.huertohogar.huertohogarmovil.ui.viewmodel.CartState
 import com.huertohogar.huertohogarmovil.ui.viewmodel.CartUiEvent
 import com.huertohogar.huertohogarmovil.ui.viewmodel.CartViewModel
 import com.huertohogar.huertohogarmovil.ui.viewmodel.ViewModelFactory
 import com.huertohogar.model.CarritoItemConDetalles
-// --- FIN DE CORRECCIÓN ---
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun CartRoute(
     onNavigateToCheckout: () -> Unit,
-    // Conectamos el ViewModel
-    factory: ViewModelFactory = viewModelFactory(), // Usa el helper de abajo
+    factory: ViewModelFactory = viewModelFactory(),
     viewModel: CartViewModel = viewModel(factory = factory)
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    // Escuchamos eventos para navegar o mostrar Toasts
     LaunchedEffect(Unit) {
         viewModel.eventFlow.collectLatest { event ->
             when (event) {
                 is CartUiEvent.NavigateToCheckout -> {
-                    Toast.makeText(context, "¡Compra realizada! (Simulación)", Toast.LENGTH_LONG).show()
-                    onNavigateToCheckout() // Navegamos a Home
+                    Toast.makeText(context, "¡Compra realizada!", Toast.LENGTH_LONG).show()
+                    onNavigateToCheckout()
                 }
                 is CartUiEvent.ShowSnackbar -> {
                     Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
@@ -57,8 +59,6 @@ fun CartRoute(
 
     CartScreen(
         state = uiState,
-        // --- CORRECCIÓN DE LÓGICA ---
-        // Usamos el patrón onEvent para enviar acciones al ViewModel
         onRemoveItem = { itemDetalles ->
             viewModel.onEvent(CartEvent.OnRemoveItemClick(itemDetalles))
         },
@@ -71,47 +71,69 @@ fun CartRoute(
         onCheckoutClick = {
             viewModel.onEvent(CartEvent.OnCheckoutClick)
         }
-        // --- FIN DE CORRECCIÓN ---
     )
 }
 
 @Composable
 fun CartScreen(
-    state: CartState, // <-- Usamos el tipo importado
+    state: CartState,
     onRemoveItem: (CarritoItemConDetalles) -> Unit,
     onIncreaseQuantity: (CarritoItemConDetalles) -> Unit,
     onDecreaseQuantity: (CarritoItemConDetalles) -> Unit,
     onCheckoutClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier.fillMaxSize()) {
-        if (state.isLoading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
-        } else if (state.cartItems.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Tu carrito está vacío", style = MaterialTheme.typography.bodyLarge)
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(state.cartItems, key = { it.carritoItem.id }) { item ->
-                    CartItemRow(
-                        item = item,
-                        onRemove = { onRemoveItem(item) },
-                        onIncrease = { onIncreaseQuantity(item) },
-                        onDecrease = { onDecreaseQuantity(item) }
+    // --- ¡AQUÍ ESTÁ EL CAMBIO PARA EL FONDO! ---
+    Box(modifier = modifier.fillMaxSize()) {
+        // 1. Imagen de fondo
+        Image(
+            painter = painterResource(id = R.drawable.login_background), // O R.drawable.app_background
+            contentDescription = "Fondo de la aplicación",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
+
+        // 2. Capa de superficie semi-transparente
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
+        ) {}
+        // --- FIN DEL FONDO ---
+
+        // 3. Contenido de la pantalla (el Column)
+        Column(modifier = Modifier.fillMaxSize().systemBarsPadding()) {
+            if (state.isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            } else if (state.cartItems.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        "Tu carrito está vacío",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface // Asegura texto visible
                     )
                 }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.weight(1f),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(state.cartItems, key = { it.carritoItem.id }) { item ->
+                        CartItemRow(
+                            item = item,
+                            onRemove = { onRemoveItem(item) },
+                            onIncrease = { onIncreaseQuantity(item) },
+                            onDecrease = { onDecreaseQuantity(item) }
+                        )
+                    }
+                }
+                CartSummary(
+                    totalPrice = state.totalPrice,
+                    onCheckoutClick = onCheckoutClick
+                )
             }
-            CartSummary(
-                totalPrice = state.totalPrice,
-                onCheckoutClick = onCheckoutClick
-            )
         }
     }
 }
@@ -124,20 +146,45 @@ fun CartItemRow(
     onDecrease: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(modifier = modifier.fillMaxWidth()) {
+    val context = LocalContext.current
+    val imageResId = context.resources.getIdentifier(
+        item.producto.imageName,
+        "drawable",
+        context.packageName
+    )
+
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            // Hacemos el fondo de la Card semi-transparente
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+        )
+    ) {
         Row(
             modifier = Modifier.padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Placeholder de imagen
-            Box(Modifier.size(64.dp), contentAlignment = Alignment.Center) { Text("IMG") }
+            Image(
+                painter = painterResource(id = if (imageResId != 0) imageResId else R.drawable.ic_launcher_background),
+                contentDescription = item.producto.name,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(64.dp)
+                    .clip(MaterialTheme.shapes.small)
+            )
 
             Column(modifier = Modifier.weight(1.0f).padding(horizontal = 8.dp)) {
-                Text(item.producto.name, style = MaterialTheme.typography.titleMedium, maxLines = 2)
                 Text(
-                    "$${item.producto.price}", // <-- Símbolo de moneda corregido
+                    item.producto.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 2,
+                    color = MaterialTheme.colorScheme.onSurface // Asegura texto visible
+                )
+                Text(
+                    "$${item.producto.price}",
                     style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface // Asegura texto visible
                 )
             }
 
@@ -146,7 +193,11 @@ fun CartItemRow(
                 IconButton(onClick = onDecrease) {
                     Icon(Icons.Default.Remove, contentDescription = "Quitar uno")
                 }
-                Text("${item.carritoItem.quantity}", style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    "${item.carritoItem.quantity}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface // Asegura texto visible
+                )
                 IconButton(onClick = onIncrease) {
                     Icon(Icons.Default.Add, contentDescription = "Añadir uno")
                 }
@@ -166,7 +217,11 @@ fun CartSummary(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(8.dp)
+        elevation = CardDefaults.cardElevation(8.dp),
+        colors = CardDefaults.cardColors(
+            // Hacemos el fondo de la Card semi-transparente
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
+        )
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -175,9 +230,13 @@ fun CartSummary(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("Total:", style = MaterialTheme.typography.titleLarge)
                 Text(
-                    "$${String.format("%d", totalPrice)}", // <-- Símbolo de moneda corregido
+                    "Total:",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface // Asegura texto visible
+                )
+                Text(
+                    "$${String.format("%d", totalPrice)}",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -198,8 +257,6 @@ fun CartSummary(
 }
 
 // --- FUNCIÓN AYUDANTE (HELPER) ---
-// Pégala al final del archivo para obtener la ViewModelFactory.
-
 @Composable
 fun viewModelFactory(): ViewModelFactory {
     val application = (LocalContext.current.applicationContext as HuertoHogarApp)

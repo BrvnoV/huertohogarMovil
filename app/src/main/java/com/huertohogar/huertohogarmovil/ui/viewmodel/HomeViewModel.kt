@@ -21,7 +21,6 @@ data class HomeState(
  */
 class HomeViewModel(
     private val repository: AppRepository, // <-- 4. Corregido (privado y tipo)
-    // --- 5. CORRECCIÓN DEL CONSTRUCTOR ---
     private val sessionManager: SessionManager // <-- Usamos TU SessionManager
 ) : ViewModel() {
 

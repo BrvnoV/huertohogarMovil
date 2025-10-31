@@ -24,7 +24,6 @@ import com.huertohogar.huertohogarmovil.ui.components.HuertoTextField
 import com.huertohogar.huertohogarmovil.ui.viewmodel.LoginEvent
 import com.huertohogar.huertohogarmovil.ui.viewmodel.LoginViewModel
 import com.huertohogar.huertohogarmovil.ui.viewmodel.ViewModelFactory
-// --- FIN DE IMPORTS ---
 
 @Composable
 fun LoginRoute(
@@ -43,8 +42,8 @@ fun LoginRoute(
     }
 
     // Usuario de prueba pre-cargado
-    var email by rememberSaveable { mutableStateOf("huerto@hogar.com") }
-    var password by rememberSaveable { mutableStateOf("123123") }
+    var email by rememberSaveable { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
 
     LoginScreen(
         email = email,

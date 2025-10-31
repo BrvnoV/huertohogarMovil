@@ -2,9 +2,9 @@ package com.huertohogar.huertohogarmovil
 
 
 import android.app.Application
-import com.huertohogar.data.AppDatabase
 import com.huertohogar.huertohogarmovil.data.repository.AppRepository
 import com.huertohogar.huertohogarmovil.data.repository.AppRepositoryImpl
+import com.huertohogar.huertohogarmovil.repository.AppDatabase
 import com.huertohogar.huertohogarmovil.repository.SessionManager
 
 

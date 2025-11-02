@@ -1,52 +1,32 @@
 package com.huertohogar.huertohogarmovil.location
 
-
-
-import android.location.Location
-import kotlinx.coroutines.flow.Flow
-
-/**
- * Interfaz para un servicio que obtiene la ubicación del usuario.
- */
-interface LocationService {
-    /**
-     * Emite actualizaciones de la ubicación del usuario.
-     * Emitirá null si la ubicación no está disponible o los permisos
-     * son denegados.
-     */
-    fun getLocationUpdates(): Flow<Location?>
-
-    /**
-     * Obtiene la última ubicación conocida de forma asíncrona.
-     */
-    suspend fun getLastKnownLocation(): Location?
-}
+import android.annotation.SuppressLint
+import android.content.Context
+import com.google.android.gms.location.LocationServices
+import com.huertohogar.huertohogarmovil.ui.viewmodel.UbicacionViewModel
 
 /**
- * Implementación (simulada) del servicio de localización.
- * Una implementación real usaría FusedLocationProviderClient de Google Play Services,
- * manejaría solicitudes de permisos y verificaría si el GPS está activado.
+ * Función que encapsula la lógica para obtener la última ubicación conocida
+ * y actualizar el ViewModel.
+ *
+ * NOTA: Esta función es un reemplazo directo de la función de tu clase.
+ *
+ * @param contexto Contexto de la aplicación.
+ * @param viewModel El UbicacionViewModel para actualizar las coordenadas.
  */
-class LocationServiceImpl(
-    // private val fusedLocationClient: FusedLocationProviderClient,
-    // private val applicationContext: Context
-) : LocationService {
+@SuppressLint("MissingPermission")
+fun obtenerUbicacion(contexto: Context, viewModel: UbicacionViewModel) {
+    val proveedorUbicacion = LocationServices.getFusedLocationProviderClient(contexto)
 
-    override fun getLocationUpdates(): Flow<Location?> {
-        // Lógica (compleja) para crear un callbackFlow
-        // que escuche los cambios de ubicación del FusedLocationProviderClient.
-        // Por ahora, devolvemos un flow vacío.
-        return kotlinx.coroutines.flow.flowOf(null)
-    }
-
-    override suspend fun getLastKnownLocation(): Location? {
-        // Lógica (con suspensión y callbacks) para obtener la última ubicación.
-        // try {
-        //     return fusedLocationClient.lastLocation.await()
-        // } catch (e: SecurityException) {
-        //     // Permiso denegado
-        //     return null
-        // }
-        return null // Simulación
+    // Solicitamos la última ubicación conocida
+    proveedorUbicacion.lastLocation.addOnSuccessListener { ubicacion ->
+        if (ubicacion != null) {
+            // Si la ubicación es válida, actualizamos el ViewModel
+            viewModel.actualizarUbicacion(ubicacion.latitude, ubicacion.longitude)
+        } else {
+            // Si no se encuentra la última ubicación, podríamos intentar una más fresca,
+            // pero para este ejemplo, simplemente usamos el default.
+            // (La lógica del ViewModel ya maneja el default)
+        }
     }
 }

@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 
 @Database(
     entities = [Usuario::class, Producto::class, CarritoItem::class],
-    version = 8, // Sube este número si necesitas forzar una recreación
+    version = 9, // Sube este número si necesitas forzar una recreación
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

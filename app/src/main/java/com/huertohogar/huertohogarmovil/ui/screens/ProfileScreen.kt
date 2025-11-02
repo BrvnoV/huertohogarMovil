@@ -1,10 +1,10 @@
 package com.huertohogar.huertohogarmovil.screens.profile
 
-// --- ¡IMPORTS AÑADIDOS! ---
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -21,15 +21,16 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.huertohogar.huertohogarmovil.HuertoHogarApp
 import com.huertohogar.huertohogarmovil.R
+import com.huertohogar.huertohogarmovil.ui.viewModelFactory
 import com.huertohogar.huertohogarmovil.ui.viewmodel.ProfileEvent
 import com.huertohogar.huertohogarmovil.ui.viewmodel.ProfileState
 import com.huertohogar.huertohogarmovil.ui.viewmodel.ProfileViewModel
 import com.huertohogar.huertohogarmovil.ui.viewmodel.ViewModelFactory
-// --- FIN DE IMPORTS ---
 
 @Composable
 fun ProfileRoute(
     onNavigateToLogin: () -> Unit,
+    onNavigateToMap: () -> Unit, // Recibe la acción de navegación al mapa
     factory: ViewModelFactory = viewModelFactory(),
     viewModel: ProfileViewModel = viewModel(factory = factory)
 ) {
@@ -38,11 +39,10 @@ fun ProfileRoute(
     ProfileScreen(
         state = uiState,
         onLogoutClick = {
-            // Notificamos al ViewModel que el usuario quiere salir
             viewModel.onEvent(ProfileEvent.OnLogoutClick)
-            // Ejecutamos la navegación (que se pasa desde AppNavigationGraph)
-            onNavigateToLogin()
-        }
+            onNavigateToLogin() // Ejecuta la navegación fuera del grafo principal
+        },
+        onNavigateToMap = onNavigateToMap // Pasa la acción al composable de la UI
     )
 }
 
@@ -50,13 +50,14 @@ fun ProfileRoute(
 fun ProfileScreen(
     state: ProfileState,
     onLogoutClick: () -> Unit,
+    onNavigateToMap: () -> Unit, // Recibe la acción de navegación al mapa
     modifier: Modifier = Modifier
 ) {
-    // --- ¡AQUÍ ESTÁ EL CAMBIO PARA EL FONDO! ---
+    // --- FONDO DE LA PANTALLA ---
     Box(modifier = modifier.fillMaxSize()) {
         // 1. Imagen de fondo
         Image(
-            painter = painterResource(id = R.drawable.profile_background), // O R.drawable.app_background
+            painter = painterResource(id = R.drawable.login_background),
             contentDescription = "Fondo de la aplicación",
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
@@ -67,7 +68,7 @@ fun ProfileScreen(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
         ) {}
-        // --- FIN DEL FONDO ---
+        // --- FIN DE FONDO ---
 
         // 3. Contenido de la pantalla
         Column(
@@ -85,7 +86,7 @@ fun ProfileScreen(
                 Text(
                     "Mi Perfil",
                     style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.onSurface // Asegura texto visible
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(32.dp))
 
@@ -100,24 +101,37 @@ fun ProfileScreen(
                         ProfileInfoRow(
                             icon = Icons.Default.Person,
                             text = state.userName,
-                            color = MaterialTheme.colorScheme.onSurface // Asegura texto visible
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         ProfileInfoRow(
                             icon = Icons.Default.Email,
                             text = state.userEmail,
-                            color = MaterialTheme.colorScheme.onSurface // Asegura texto visible
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
 
-                // (Opcional) Puedes añadir más cards aquí para "Direcciones", "Pedidos", etc.
+                // --- BOTÓN PARA EL MAPA ---
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = onNavigateToMap, // Llama a la navegación al mapa
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.LocationOn,
+                        contentDescription = "Mapa",
+                        modifier = Modifier.size(ButtonDefaults.IconSize)
+                    )
+                    Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                    Text("Ver mi ubicación en el mapa")
+                }
+                // --- FIN DE BOTÓN ---
 
-                Spacer(modifier = Modifier.weight(1f)) // Empuja el botón al fondo
+                Spacer(modifier = Modifier.weight(1f)) // Empuja el botón de logout al fondo
 
                 Button(
                     onClick = onLogoutClick,
-                    // Usamos el color 'tertiary' (Terracotta) para el logout
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.tertiary
                     ),
@@ -134,7 +148,7 @@ fun ProfileScreen(
 fun ProfileInfoRow(
     icon: ImageVector,
     text: String,
-    color: Color, // Para pasar el color del texto
+    color: Color,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -144,17 +158,10 @@ fun ProfileInfoRow(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary, // Icono en verde
+            tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(32.dp)
         )
         Spacer(modifier = Modifier.width(16.dp))
         Text(text = text, style = MaterialTheme.typography.bodyLarge, color = color)
     }
-}
-
-// --- FUNCIÓN AYUDANTE (HELPER) ---
-@Composable
-fun viewModelFactory(): ViewModelFactory {
-    val application = (LocalContext.current.applicationContext as HuertoHogarApp)
-    return ViewModelFactory(application.repository, application.sessionManager)
 }

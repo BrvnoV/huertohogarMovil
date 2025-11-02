@@ -16,6 +16,12 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+
+        // Repositorio específico para osmdroid-compose
+        maven { url = uri("https://www.jitpack.io") } // Algunos proyectos de OSM lo usan
+
+        // A menudo, los proyectos de código abierto se alojan aquí también:
+        maven { url = uri("https://repo.osmdroid.org/") }
     }
 }
 

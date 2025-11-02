@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.huertohogar.huertohogarmovil.HuertoHogarApp
 import com.huertohogar.huertohogarmovil.R //
+import com.huertohogar.huertohogarmovil.ui.viewModelFactory
 import com.huertohogar.huertohogarmovil.ui.viewmodel.CartEvent
 import com.huertohogar.huertohogarmovil.ui.viewmodel.CartState
 import com.huertohogar.huertohogarmovil.ui.viewmodel.CartUiEvent
@@ -256,9 +257,3 @@ fun CartSummary(
     }
 }
 
-// --- FUNCIÓN AYUDANTE (HELPER) ---
-@Composable
-fun viewModelFactory(): ViewModelFactory {
-    val application = (LocalContext.current.applicationContext as HuertoHogarApp)
-    return ViewModelFactory(application.repository, application.sessionManager)
-}

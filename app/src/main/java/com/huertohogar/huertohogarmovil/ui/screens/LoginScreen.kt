@@ -21,6 +21,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.huertohogar.huertohogarmovil.R
 import com.huertohogar.huertohogarmovil.HuertoHogarApp
 import com.huertohogar.huertohogarmovil.ui.components.HuertoTextField
+import com.huertohogar.huertohogarmovil.ui.viewModelFactory
 import com.huertohogar.huertohogarmovil.ui.viewmodel.LoginEvent
 import com.huertohogar.huertohogarmovil.ui.viewmodel.LoginViewModel
 import com.huertohogar.huertohogarmovil.ui.viewmodel.ViewModelFactory
@@ -173,11 +174,4 @@ fun LoginScreen(
             }
         }
     }
-}
-
-// --- FUNCIÓN AYUDANTE (HELPER) ---
-@Composable
-fun viewModelFactory(): ViewModelFactory {
-    val application = (LocalContext.current.applicationContext as HuertoHogarApp)
-    return ViewModelFactory(application.repository, application.sessionManager)
 }

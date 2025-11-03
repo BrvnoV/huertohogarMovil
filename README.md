@@ -18,7 +18,7 @@ Huerto Hogar es un prototipo de aplicación de e-commerce minimalista y funciona
 
 🛠️ 2. Tecnologías y Estructura
 
-El proyecto está construido bajo la arquitectura MVVM para una clara separación de responsabilidades y la utilización de principios de Modularidad y Patrones Arquitectónicos (IE 2.3.2).
+El proyecto está construido bajo la arquitectura MVVM para una clara separación de responsabilidades y la utilización de principios de Modularidad y Patrones Arquitectónicos.
 
 Stack Principal
 

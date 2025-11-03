@@ -97,21 +97,3 @@ GPS y Ubicación: Integración del recurso de Ubicación GPS del dispositivo.
 Implementación: Uso de la API nativa de Android (FusedLocationProviderClient) a través de la función obtenerUbicacion para obtener coordenadas.
 
 Visualización: El mapa se renderiza utilizando OpenStreetMap (OSM), demostrando la integración de un sistema de mapas sin dependencia de claves de API de Google.
-
-🏃 4. Cómo Ejecutar el Proyecto
-
-Clonar Repositorio: git clone https://docs.github.com/es/repositories/creating-and-managing-repositories/quickstart-for-repositories
-
-Abrir en Android Studio: Abrir la carpeta raíz como proyecto.
-
-Sincronizar Gradle: Esperar a que la sincronización termine o hacer clic en File > Sync Project with Gradle Files.
-
-Ejecutar: Desplegar en un emulador con Google Play Services o en un dispositivo físico.
-
-Ruta de Prueba:
-
-Registro: Crear un nuevo usuario (las credenciales de prueba han sido eliminadas).
-
-Catálogo: Añadir un par de productos al carrito.
-
-Mapa: Ir a Perfil y presionar "Ver mi ubicación en el mapa" para probar el recurso nativo (GPS).

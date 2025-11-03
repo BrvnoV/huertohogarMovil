@@ -1,6 +1,5 @@
 package com.huertohogar.huertohogarmovil.ui.navigation
 
-import com.huertohogar.huertohogarmovil.ui.screens.MainScreenContainer
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -14,19 +13,19 @@ import androidx.navigation.navigation
 import com.huertohogar.huertohogarmovil.screens.cart.CartRoute
 import com.huertohogar.huertohogarmovil.screens.home.HomeRoute
 import com.huertohogar.huertohogarmovil.screens.login.LoginRoute
+import com.huertohogar.huertohogarmovil.screens.map.MapRoute // Importante
 import com.huertohogar.huertohogarmovil.screens.products.ProductsRoute
 import com.huertohogar.huertohogarmovil.screens.profile.ProfileRoute
 import com.huertohogar.huertohogarmovil.screens.register.RegisterRoute
-
+import com.huertohogar.huertohogarmovil.ui.screens.MainScreenContainer
 
 /**
  * Grafo de Navegación Principal de la App (el de más alto nivel)
- * Define el flujo entre Autenticación y la App Principal.
  */
 @Composable
 fun AppNavigationGraph(
-    navController: NavHostController,
-    startDestination: String
+    navController: NavHostController = rememberNavController(),
+    startDestination: String = Graph.AUTHENTICATION
 ) {
     NavHost(
         navController = navController,
@@ -40,9 +39,7 @@ fun AppNavigationGraph(
             composable(AuthScreen.Login.route) {
                 LoginRoute(
                     onLoginSuccess = {
-                        // Al iniciar sesión, ir al grafo principal
                         navController.navigate(Graph.MAIN) {
-                            // Limpiar el backstack para no volver a Login
                             popUpTo(Graph.AUTHENTICATION) { inclusive = true }
                         }
                     },
@@ -54,13 +51,12 @@ fun AppNavigationGraph(
             composable(AuthScreen.Register.route) {
                 RegisterRoute(
                     onRegisterSuccess = {
-                        // Al registrarse, volver a Login
                         navController.navigate(AuthScreen.Login.route) {
                             popUpTo(AuthScreen.Login.route) { inclusive = true }
                         }
                     },
                     onNavigateToLogin = {
-                        navController.popBackStack() // Volver a la pantalla anterior (Login)
+                        navController.popBackStack()
                     }
                 )
             }
@@ -68,12 +64,8 @@ fun AppNavigationGraph(
 
         // Grafo Principal de la App (con Bottom Bar)
         composable(route = Graph.MAIN) {
-            // Este es el punto de entrada a la app (post-login).
-            // Llama al MainScreenContainer y le pasa el evento onLogout.
             MainScreenContainer(
                 onLogout = {
-                    // Si el usuario cierra sesión (desde ProfileScreen),
-                    // volvemos al grafo de autenticación.
                     navController.navigate(Graph.AUTHENTICATION) {
                         popUpTo(Graph.MAIN) { inclusive = true }
                     }
@@ -85,52 +77,53 @@ fun AppNavigationGraph(
 
 /**
  * Grafo de navegación para las pantallas INTERNAS (Home, Products, etc.)
- * Este NavHost va *dentro* del Scaffold en MainScreenContainer.
  */
 @Composable
 fun MainNavigationGraph(
     navController: NavHostController,
     padding: PaddingValues,
-    onLogout: () -> Unit // Recibe el evento de logout desde arriba
+    onLogout: () -> Unit // Parámetro 1: Cerrar Sesión
+    // --- ¡AQUÍ ES DONDE FALTABA EL PARÁMETRO! ---
 ) {
+    // Definimos la nueva ruta para el mapa
+    val mapRoute = "map_screen"
+
     NavHost(
         navController = navController,
         startDestination = MainScreen.Home.route,
-        modifier = Modifier.padding(padding) // Aplica el padding del Scaffold
+        modifier = Modifier.padding(padding)
     ) {
         composable(MainScreen.Home.route) {
             HomeRoute(
-                onNavigateToProductDetails = { productId ->
-                    // Aquí puedes añadir navegación a detalles de producto
-                    // navController.navigate("productDetails/$productId")
-                }
+                onNavigateToProductDetails = { /* ... */ }
             )
         }
         composable(MainScreen.Products.route) {
             ProductsRoute(
-                onNavigateToProductDetails = { productId ->
-                    // navController.navigate("productDetails/$productId")
-                }
+                onNavigateToProductDetails = { /* ... */ }
             )
         }
         composable(MainScreen.Cart.route) {
             CartRoute(
                 onNavigateToCheckout = {
-                    // --- CORRECCIÓN ---
-                    // Al "pagar", volvemos a Home y limpiamos la pila
-                    // para que el usuario no pueda "volver" al carrito vacío.
                     navController.navigate(MainScreen.Home.route) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            inclusive = true
-                        }
+                        popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
                     }
                 }
             )
         }
         composable(MainScreen.Profile.route) {
             ProfileRoute(
-                // Pasa el evento de logout a la pantalla de Perfil
-                onNavigateToLogin = onLogout
+                onNavigateToLogin = onLogout,
+                // Parámetro 2: Pasamos la acción para navegar al mapa
+                onNavigateToMap = { navController.navigate(mapRoute) }
+            )
+        }
+
+        // Añadimos el composable del mapa
+        composable(route = mapRoute) {
+            MapRoute(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }

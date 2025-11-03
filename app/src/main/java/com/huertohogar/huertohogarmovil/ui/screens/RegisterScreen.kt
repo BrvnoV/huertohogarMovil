@@ -20,6 +20,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.huertohogar.huertohogarmovil.HuertoHogarApp
 import com.huertohogar.huertohogarmovil.R // <-- Importado
 import com.huertohogar.huertohogarmovil.ui.components.HuertoTextField
+import com.huertohogar.huertohogarmovil.ui.viewModelFactory
 import com.huertohogar.huertohogarmovil.ui.viewmodel.RegisterEvent
 import com.huertohogar.huertohogarmovil.ui.viewmodel.RegisterState
 import com.huertohogar.huertohogarmovil.ui.viewmodel.RegisterViewModel
@@ -192,11 +193,4 @@ fun RegisterScreen(
             }
         }
     }
-}
-
-// --- FUNCIÓN AYUDANTE (HELPER) ---
-@Composable
-fun viewModelFactory(): ViewModelFactory {
-    val application = (LocalContext.current.applicationContext as HuertoHogarApp)
-    return ViewModelFactory(application.repository, application.sessionManager)
 }

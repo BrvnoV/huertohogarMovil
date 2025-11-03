@@ -1,4 +1,4 @@
-package com.huertohogar.data
+package com.huertohogar.huertohogarmovil.repository
 
 import android.content.Context
 import androidx.room.Database
@@ -16,8 +16,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Database(
-    entities = [Usuario::class, Producto::class, CarritoItem::class], // <-- ADAPTADO
-    version = 4,
+    entities = [Usuario::class, Producto::class, CarritoItem::class],
+    version = 9, // Sube este número si necesitas forzar una recreación
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -25,14 +25,13 @@ abstract class AppDatabase : RoomDatabase() {
     // DAOs abstractos que Room implementará
     abstract fun usuarioDao(): UsuarioDao
     abstract fun productoDao(): ProductoDao
-    abstract fun carritoDao(): CarritoDao // <-- ADAPTADO
+    abstract fun carritoDao(): CarritoDao
 
     companion object {
         // Volatile asegura que la instancia sea siempre visible para todos los hilos
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
-        // Usamos tu método getInstance
         fun getInstance(context: Context): AppDatabase {
             // synchronized evita que dos hilos creen la instancia al mismo tiempo
             return INSTANCE ?: synchronized(this) {
@@ -41,8 +40,8 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "huerto_hogar_db"
                 )
-                    .addCallback(RoomDatabaseCallback(context)) // Añadimos tu callback
-                    .fallbackToDestructiveMigration()
+                    .addCallback(RoomDatabaseCallback(context)) // Añadimos el callback
+                    .fallbackToDestructiveMigration() // Borra la DB si la versión cambia
                     .build()
                 INSTANCE = instance
                 instance
@@ -51,46 +50,36 @@ abstract class AppDatabase : RoomDatabase() {
     }
 
     /**
-     * Tu Callback para pre-poblar la base de datos la primera vez que se crea.
+     * Callback para pre-poblar la base de datos la primera vez que se crea.
+     * ¡Actualizado para no crear usuarios de prueba!
      */
     private class RoomDatabaseCallback(private val context: Context) : RoomDatabase.Callback() {
+
         override fun onCreate(db: SupportSQLiteDatabase) {
             super.onCreate(db)
-            // Usamos un CoroutineScope para lanzar las operaciones de inserción en un hilo de fondo
             INSTANCE?.let { database ->
                 CoroutineScope(Dispatchers.IO).launch {
-                    prePopulateUsuarios(database.usuarioDao())
                     prePopulateProductos(database.productoDao())
                 }
             }
         }
 
         /**
-         * ADAPTADO: Inserta el usuario de prueba usando el modelo Usuario (con email y passwordHash)
-         */
-        suspend fun prePopulateUsuarios(usuarioDao: UsuarioDao) {
-            // Adaptado para coincidir con el modelo Usuario (email, nombre, passwordHash)
-            val testUser = Usuario(
-                email = "huerto@hogar.com", // Usamos email para el login
-                passwordHash = "123123", // En app real, hashear "123123"
-                nombre = "Naya"
-            )
-            usuarioDao.insertUsuario(testUser)
-        }
-
-        /**
-         * ADAPTADO: Inserta la lista inicial de productos usando el modelo Producto (id String, price Int, etc.)
+         * Inserta la lista inicial de productos del huerto
+         * (Usa los nombres de los archivos en 'drawable')
          */
         suspend fun prePopulateProductos(productoDao: ProductoDao) {
-
-            // --- ¡LISTA ACTUALIZADA CON NOMBRES DE ARCHIVO! ---
-            // (Asegúrate de que estos nombres coincidan con los que pusiste en drawable)
             val productosIniciales = listOf(
-                Producto(id = "1", name = "Tomate Cherry (Bandeja 250g)", description = "Pequeños tomates dulces...", price = 2490,
-                    imageName = "tomate_cherry"), // <-- Sin .jpg
+                Producto(
+                    id = "1",
+                    name = "Tomate Cherry (Bandeja 250g)",
+                    description = "Pequeños tomates dulces...",
+                    price = 2490,
+                    imageName = "tomate_cherry"
+                ),
 
                 Producto(id = "2", name = "Lechuga Hidropónica Costina (Unidad)", description = "Lechuga fresca y crujiente...", price = 1390,
-                    imageName = "lechuga"), // <-- Sin .png
+                    imageName = "lechuga"),
 
                 Producto(id = "3", name = "Frutillas Orgánicas (Bandeja 500g)", description = "Selección de frutillas maduradas...", price = 3990,
                     imageName = "frutillas"),
@@ -116,8 +105,6 @@ abstract class AppDatabase : RoomDatabase() {
                 Producto(id = "10", name = "Zapallo Italiano (Zucchini)", description = "Zucchini tierno y versátil...", price = 990,
                     imageName = "zapallo_italiano")
             )
-            // --- FIN DE LA LISTA ---
-
             productoDao.insertAll(productosIniciales)
         }
     }

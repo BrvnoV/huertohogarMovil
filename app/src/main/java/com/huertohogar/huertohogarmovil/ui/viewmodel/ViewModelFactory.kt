@@ -1,58 +1,58 @@
 package com.huertohogar.huertohogarmovil.ui.viewmodel
 
-
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.huertohogar.huertohogarmovil.data.repository.AppRepository
 import com.huertohogar.huertohogarmovil.repository.SessionManager
 
-
 /**
  * Esta fábrica crea nuestros ViewModels y les "inyecta" el Repositorio
- * y el SessionManager que necesitan para funcionar, los cuales obtiene
- * desde la clase HuertoHogarApp.
+ * y el SessionManager que necesitan.
  */
 class ViewModelFactory(
     private val repository: AppRepository,
     private val sessionManager: SessionManager
+    // El parámetro 'locationService' fue eliminado, ya que la lógica GPS es estática.
 ) : ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
 
-        // Comprueba qué ViewModel se está pidiendo y lo construye
-        // con las dependencias correctas.
-
+        // Autenticación
         if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
             return LoginViewModel(repository, sessionManager) as T
         }
-
         if (modelClass.isAssignableFrom(RegisterViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return RegisterViewModel(repository) as T // Register no necesita SessionManager
+            return RegisterViewModel(repository) as T
         }
 
-        if (modelClass.isAssignableFrom(ProfileViewModel::class.java)) {
+        // Contenido Principal
+        if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return ProfileViewModel(repository, sessionManager) as T
+            return HomeViewModel(repository, sessionManager) as T
         }
-
         if (modelClass.isAssignableFrom(ProductsViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
             return ProductsViewModel(repository, sessionManager) as T
         }
-
         if (modelClass.isAssignableFrom(CartViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
             return CartViewModel(repository, sessionManager) as T
         }
 
-        if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
+        // Perfil y Mapa
+        if (modelClass.isAssignableFrom(ProfileViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return HomeViewModel(repository, sessionManager) as T
+            return ProfileViewModel(repository, sessionManager) as T
         }
 
-        // Si se pide un ViewModel que no conocemos, lanza un error.
+        // Ubicacion (Utiliza el servicio estático, no necesita inyección)
+        if (modelClass.isAssignableFrom(UbicacionViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return UbicacionViewModel() as T
+        }
+
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
     }
 }

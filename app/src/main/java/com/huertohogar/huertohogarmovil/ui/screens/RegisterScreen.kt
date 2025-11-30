@@ -17,7 +17,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.huertohogar.huertohogarmovil.HuertoHogarApp
+import com.huertohogar.huertohogarmovil.HuertohogarMovilApp
 import com.huertohogar.huertohogarmovil.R // <-- Importado
 import com.huertohogar.huertohogarmovil.ui.components.HuertoTextField
 import com.huertohogar.huertohogarmovil.ui.viewModelFactory

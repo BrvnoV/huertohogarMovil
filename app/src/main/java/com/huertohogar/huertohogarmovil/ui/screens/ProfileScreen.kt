@@ -19,7 +19,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.huertohogar.huertohogarmovil.HuertoHogarApp
+import com.huertohogar.huertohogarmovil.HuertohogarMovilApp
 import com.huertohogar.huertohogarmovil.R
 import com.huertohogar.huertohogarmovil.ui.viewModelFactory
 import com.huertohogar.huertohogarmovil.ui.viewmodel.ProfileEvent

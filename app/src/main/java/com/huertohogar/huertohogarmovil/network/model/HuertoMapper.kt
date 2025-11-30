@@ -1,6 +1,10 @@
 package com.huertohogar.huertohogarmovil.network.model
 
 import com.huertohogar.huertohogarmovil.model.Producto
+// --- ¡IMPORTACIÓN FALTANTE AÑADIDA! ---
+// Necesitas importar la clase FruitDto para que la función la reconozca.
+import com.huertohogar.huertohogarmovil.network.model.FruitDto
+// --- FIN DE IMPORTACIÓN ---
 
 object HuertoMapper {
 
@@ -13,8 +17,6 @@ object HuertoMapper {
             val calculatedPrice = fruitDto.nutritions.calories * 10
 
             // Lógica para imagen: Intentamos usar el nombre de la fruta en minúsculas
-            // (ej: "apple" -> "apple"). Si no tienes esa imagen en drawable,
-            // el ProductCard usará el ícono por defecto (ic_launcher) gracias a tu código.
             val imageName = fruitDto.name.lowercase().replace(" ", "_")
 
             Producto(

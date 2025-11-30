@@ -23,7 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.huertohogar.huertohogarmovil.HuertoHogarApp
+import com.huertohogar.huertohogarmovil.HuertohogarMovilApp
 import com.huertohogar.huertohogarmovil.R
 import com.huertohogar.huertohogarmovil.ui.viewModelFactory
 import com.huertohogar.huertohogarmovil.ui.viewmodel.ProductsEvent

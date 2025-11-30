@@ -22,7 +22,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
 import com.huertohogar.huertohogarmovil.R
-import com.huertohogar.huertohogarmovil.HuertoHogarApp
+import com.huertohogar.huertohogarmovil.HuertohogarMovilApp
 import com.huertohogar.huertohogarmovil.location.obtenerUbicacion
 import com.huertohogar.huertohogarmovil.ui.viewModelFactory
 import com.huertohogar.huertohogarmovil.ui.viewmodel.UbicacionViewModel

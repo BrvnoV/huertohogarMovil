@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.huertohogar.huertohogarmovil"
+    namespace = "com.huertohogar.huertohogarmovil" // Aseguramos que el namespace sea correcto
     compileSdk = 36
 
     defaultConfig {
@@ -37,12 +37,13 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        // Elevamos a 11 o superior para compatibilidad con librerías modernas y Compose
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11" // Elevamos a 11
     }
 
     buildFeatures {
@@ -56,17 +57,23 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
-            // Exclusiones necesarias para evitar conflictos en tests con MockK
             excludes += "/META-INF/LICENSE.md"
             excludes += "/META-INF/LICENSE-notice.md"
         }
     }
 
+    // --- ¡AJUSTE CLAVE PARA JUNIT 5! ---
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
+            isReturnDefaultValues = true
+            // Usamos el motor de ejecución de JUnit 5 (Jupiter)
+            all {
+                it.useJUnitPlatform()
+            }
         }
     }
+    // ------------------------------------
 }
 
 dependencies {
@@ -114,38 +121,31 @@ dependencies {
     //Loggin
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
-    // --- MAPAS: OPENSTREETMAP (Versión Nativa) ---
-    // Esta librería es estable y suele descargarse sin problemas
+    // --- MAPAS: OPENSTREETMAP ---
     implementation("org.osmdroid:osmdroid-android:6.1.18")
 
     // ============ TESTING ============
 
-    // Unit Tests (Local)
-    testImplementation(libs.junit)
-    // --- NUEVAS DEPENDENCIAS AÑADIDAS ---
-    testImplementation(libs.mockk)              // Para crear Mocks
-    testImplementation(libs.kotest.assertions)  // Para aserciones legibles (shouldBe)
-    testImplementation(libs.kotlinx.coroutines.test) // Para probar corutinas (runTest)
+    // JUnit 5 (BOM y Motor Principal)
+    testImplementation(platform("org.junit:junit-bom:5.10.2"))
+    testImplementation("org.junit.jupiter:junit-jupiter") // Motor de Jupiter
 
-    // Android Instrumented Tests - TODAS LAS VERSIONES 1.6.x
-    androidTestImplementation("androidx.test:core:1.6.1")
-    androidTestImplementation("androidx.test:core-ktx:1.6.1")
-    androidTestImplementation("androidx.test:runner:1.6.2")
-    androidTestImplementation("androidx.test:rules:1.6.1")
-    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    // Unit Tests (Local) - MockK, Coroutines Test
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotest.assertions)
+    testImplementation(libs.kotlinx.coroutines.test)
 
-    // Espresso
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
-
-    // UI Automator
-    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
-
-    // Test Orchestrator
-    androidTestUtil("androidx.test:orchestrator:1.5.0")
-
-    // Retrofit y Gson para consumir API
+    // Retrofit y Gson (Para testing de API)
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+
+    // Android Instrumented Tests
+    androidTestImplementation("androidx.test:core:1.6.1")
+    androidTestImplementation("androidx.test:runner:1.6.2")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
+    androidTestUtil("androidx.test:orchestrator:1.5.0")
 
     // Compose Testing
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

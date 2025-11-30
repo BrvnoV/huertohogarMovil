@@ -1,4 +1,4 @@
-package com.huertohogar.huertohogarmovil.data.repository
+package com.huertohogar.huertohogarmovil.repository
 
 import com.huertohogar.huertohogarmovil.data.dao.CarritoDao
 import com.huertohogar.huertohogarmovil.data.dao.ProductoDao
@@ -7,72 +7,82 @@ import com.huertohogar.huertohogarmovil.model.CarritoItem
 import com.huertohogar.huertohogarmovil.model.CarritoItemConDetalles
 import com.huertohogar.huertohogarmovil.model.Producto
 import com.huertohogar.huertohogarmovil.model.Usuario
+// --- IMPORTS NECESARIOS PARA EL CONSUMO REST ---
+import com.huertohogar.huertohogarmovil.network.HuertoApiService
+import com.huertohogar.huertohogarmovil.network.model.HuertoMapper // <-- Importar el objeto Mapper
+// --- FIN DE IMPORTS ---
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import java.lang.Exception
+import retrofit2.HttpException
 
 /**
- * Interfaz para el repositorio. Útil para Inyección de Dependencias y testing.
+ * Interfaz del Repositorio (El Contrato).
+ * Define todas las operaciones que la capa ViewModel puede solicitar.
  */
 interface AppRepository {
+    fun getAllProductos(): Flow<List<Producto>>
+
     // --- Usuario ---
     fun getUsuarioByEmail(email: String): Flow<Usuario?>
     fun getUsuarioById(id: Int): Flow<Usuario?>
     suspend fun registerUsuario(usuario: Usuario)
 
-    // --- Producto ---
-    fun getAllProductos(): Flow<List<Producto>>
-    fun getProductoById(id: String): Flow<Producto?>
-
-    // --- Carrito (ACTUALIZADO) ---
-
-    /**
-     * Busca un item específico en el carrito de un usuario.
-     * Usado por ProductsViewModel.
-     */
-    fun getCarritoItem(userId: Int, productId: String): Flow<CarritoItem?> // <-- NUEVO
-
-    /**
-     * Obtiene los items del carrito con todos los detalles del producto.
-     * Usado por CartViewModel.
-     */
-    fun getCarritoConDetalles(userId: Int): Flow<List<CarritoItemConDetalles>> // <-- NUEVO
-
+    // --- Carrito ---
+    fun getCarritoConDetalles(userId: Int): Flow<List<CarritoItemConDetalles>>
+    fun getCarritoItem(userId: Int, productId: String): Flow<CarritoItem?>
     suspend fun addItemAlCarrito(item: CarritoItem)
     suspend fun updateItemEnCarrito(item: CarritoItem)
     suspend fun removeItemDelCarrito(item: CarritoItem)
     suspend fun clearCarrito(userId: Int)
+
+    fun getProductoById(id: String): Flow<Producto?>
 }
 
 /**
- * Implementación del repositorio.
- * (En una app real, esto se proveería con Hilt/Dagger)
+ * Implementación del Repositorio (El Chef).
+ * Implementa la interfaz AppRepository directamente.
  */
 class AppRepositoryImpl(
     private val usuarioDao: UsuarioDao,
     private val productoDao: ProductoDao,
-    private val carritoDao: CarritoDao
+    private val carritoDao: CarritoDao,
+    private val apiService: HuertoApiService,
+    private val huertoMapper: HuertoMapper // Se inyecta la instancia del Mapper
 ) : AppRepository {
 
-    // --- Usuario ---
-    override fun getUsuarioByEmail(email: String): Flow<Usuario?> = usuarioDao.getUsuarioByEmail(email)
-    override fun getUsuarioById(id: Int): Flow<Usuario?> = usuarioDao.getUsuarioById(id)
+    // --- PRODUCTO: IMPLEMENTACIÓN CON RETROFIT (Carga desde el microservicio) ---
+    override fun getAllProductos(): Flow<List<Producto>> = flow {
+        try {
+            val response = apiService.getAllFruits()
+
+            if (response.isSuccessful && response.body() != null) {
+                // LLAMADA CORREGIDA: Usamos fromResponseToDomain
+                val productosListos = huertoMapper.fromResponseToDomain(response.body()!!)
+
+                emit(productosListos)
+            } else {
+                println("Error HTTP al obtener productos: ${response.code()}")
+                emit(emptyList())
+            }
+        } catch (e: HttpException) {
+            println("Error de red o servidor: ${e.code()}")
+            emit(emptyList())
+        } catch (e: Exception) {
+            println("Error de conexión: ${e.message}")
+            emit(emptyList())
+        }
+    }
+
+    // --- LÓGICA DE ROOM (Usuario y Carrito se mantienen locales) ---
+    override fun getUsuarioByEmail(email: String) = usuarioDao.getUsuarioByEmail(email)
+    override fun getUsuarioById(id: Int) = usuarioDao.getUsuarioById(id)
     override suspend fun registerUsuario(usuario: Usuario) = usuarioDao.insertUsuario(usuario)
-
-    // --- Producto ---
-    override fun getAllProductos(): Flow<List<Producto>> = productoDao.getAllProductos()
-    override fun getProductoById(id: String): Flow<Producto?> = productoDao.getProductoById(id)
-
-    // --- Carrito (ACTUALIZADO) ---
-
-    // override fun getCarrito(userId: Int): Flow<List<CarritoItem>> = carritoDao.getCarritoDelUsuario(userId) // <-- ELIMINADO
-
-    override fun getCarritoItem(userId: Int, productId: String): Flow<CarritoItem?> = // <-- NUEVO
-        carritoDao.getCarritoItem(userId, productId)
-
-    override fun getCarritoConDetalles(userId: Int): Flow<List<CarritoItemConDetalles>> = // <-- NUEVO
-        carritoDao.getCarritoConDetalles(userId)
-
+    override fun getCarritoConDetalles(userId: Int) = carritoDao.getCarritoConDetalles(userId)
     override suspend fun addItemAlCarrito(item: CarritoItem) = carritoDao.insertItem(item)
     override suspend fun updateItemEnCarrito(item: CarritoItem) = carritoDao.updateItem(item)
     override suspend fun removeItemDelCarrito(item: CarritoItem) = carritoDao.deleteItem(item)
     override suspend fun clearCarrito(userId: Int) = carritoDao.clearCarrito(userId)
+    override fun getCarritoItem(userId: Int, productId: String) = carritoDao.getCarritoItem(userId, productId)
+    override fun getProductoById(id: String) = productoDao.getProductoById(id)
 }

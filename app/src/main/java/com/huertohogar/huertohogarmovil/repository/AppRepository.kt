@@ -3,10 +3,10 @@ package com.huertohogar.huertohogarmovil.data.repository
 import com.huertohogar.huertohogarmovil.data.dao.CarritoDao
 import com.huertohogar.huertohogarmovil.data.dao.ProductoDao
 import com.huertohogar.huertohogarmovil.data.dao.UsuarioDao
-import com.huertohogar.model.CarritoItem
-import com.huertohogar.model.CarritoItemConDetalles
-import com.huertohogar.model.Producto
-import com.huertohogar.model.Usuario
+import com.huertohogar.huertohogarmovil.model.CarritoItem
+import com.huertohogar.huertohogarmovil.model.CarritoItemConDetalles
+import com.huertohogar.huertohogarmovil.model.Producto
+import com.huertohogar.huertohogarmovil.model.Usuario
 import kotlinx.coroutines.flow.Flow
 
 /**

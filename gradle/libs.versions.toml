@@ -43,6 +43,7 @@ androidxTestOrchestrator = "1.5.0"
 mockk = "1.13.10"
 kotest = "5.8.0"
 coroutinesTest = "1.7.3"
+playServicesMaps = "19.2.0"
 
 [libraries]
 # AndroidX Core
@@ -103,6 +104,7 @@ kotest-assertions = { group = "io.kotest", name = "kotest-assertions-core", vers
 
 # Coroutines Test
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutinesTest" }
+play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "playServicesMaps" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }

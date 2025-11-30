@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.gameverse"
+    namespace = "com.huertohogar.huertohogarmovil"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.gameverse"
+        applicationId = "com.huertohogar.huertohogarmovil"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -70,6 +70,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.play.services.maps)
     // Compose BOM
     val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
@@ -107,8 +108,15 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
+    //DataStore
     implementation("androidx.datastore:datastore-preferences:1.1.1")
 
+    //Loggin
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
+    // --- MAPAS: OPENSTREETMAP (Versión Nativa) ---
+    // Esta librería es estable y suele descargarse sin problemas
+    implementation("org.osmdroid:osmdroid-android:6.1.18")
 
     // ============ TESTING ============
 

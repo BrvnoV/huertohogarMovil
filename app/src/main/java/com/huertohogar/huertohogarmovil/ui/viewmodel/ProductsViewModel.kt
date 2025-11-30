@@ -3,9 +3,9 @@ package com.huertohogar.huertohogarmovil.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.huertohogar.huertohogarmovil.data.repository.AppRepository
+import com.huertohogar.huertohogarmovil.model.CarritoItem
+import com.huertohogar.huertohogarmovil.model.Producto
 import com.huertohogar.huertohogarmovil.repository.SessionManager
-import com.huertohogar.model.CarritoItem
-import com.huertohogar.model.Producto
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow

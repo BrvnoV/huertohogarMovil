@@ -67,11 +67,12 @@ data class CarritoItem(
  * Clase de relación para obtener el Carrito con los detalles del Producto.
  * Esto es lo que usa la UI del Carrito para mostrar nombre y precio.
  */
+
 data class CarritoItemConDetalles(
-    @Embedded
+    @androidx.room.Embedded
     val carritoItem: CarritoItem,
 
-    @Relation(
+    @androidx.room.Relation(
         parentColumn = "productId",
         entityColumn = "id"
     )

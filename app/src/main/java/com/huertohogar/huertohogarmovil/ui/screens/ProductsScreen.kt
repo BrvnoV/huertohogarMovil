@@ -30,7 +30,7 @@ import com.huertohogar.huertohogarmovil.ui.viewmodel.ProductsEvent
 import com.huertohogar.huertohogarmovil.ui.viewmodel.ProductsUiEvent
 import com.huertohogar.huertohogarmovil.ui.viewmodel.ProductsViewModel
 import com.huertohogar.huertohogarmovil.ui.viewmodel.ViewModelFactory
-import com.huertohogar.model.Producto
+import com.huertohogar.huertohogarmovil.model.Producto
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable

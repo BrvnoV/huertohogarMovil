@@ -29,7 +29,7 @@ import com.huertohogar.huertohogarmovil.ui.viewModelFactory
 import com.huertohogar.huertohogarmovil.ui.viewmodel.HomeState
 import com.huertohogar.huertohogarmovil.ui.viewmodel.HomeViewModel
 import com.huertohogar.huertohogarmovil.ui.viewmodel.ViewModelFactory
-import com.huertohogar.model.Producto
+import com.huertohogar.huertohogarmovil.model.Producto
 
 // --- FIN DE IMPORTS ---
 

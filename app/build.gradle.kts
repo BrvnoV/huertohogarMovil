@@ -1,22 +1,26 @@
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.plugin.compose")
-    id("com.google.devtools.ksp") version "2.0.0-1.0.21"
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.ksp) // Plugin para Room
 }
 
 android {
-    namespace = "com.huertohogar.huertohogarmovil"
+    namespace = "com.gameverse"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.huertohogar.huertohogarmovil"
+        applicationId = "com.gameverse"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1 // Sube esto si necesitas forzar la actualización de la BD
+        versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        testInstrumentationRunnerArguments += mapOf(
+            "clearPackageData" to "true",
+            "useTestStorageService" to "true"
+        )
+
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -31,83 +35,112 @@ android {
             )
         }
     }
+
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
+
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "1.8"
     }
+
     buildFeatures {
         compose = true
     }
+
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.11"
+        kotlinCompilerExtensionVersion = "1.5.3"
     }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            // Exclusiones necesarias para evitar conflictos en tests con MockK
+            excludes += "/META-INF/LICENSE.md"
+            excludes += "/META-INF/LICENSE-notice.md"
+        }
+    }
+
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
         }
     }
 }
 
 dependencies {
+    // Compose BOM
+    val composeBom = platform(libs.androidx.compose.bom)
+    implementation(composeBom)
+    androidTestImplementation(composeBom)
 
-    // --- Núcleo de Android y Compose ---
-    implementation("androidx.core:core-ktx:1.13.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.1")
-    implementation("androidx.activity:activity-compose:1.9.0")
-    implementation(platform("androidx.compose:compose-bom:2024.05.00"))
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.ui:ui-graphics")
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.material:material-icons-extended")
-    implementation(libs.play.services.maps)
+    // Core Android
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.activity.compose)
 
-    // --- LÍNEA INCORRECTA ELIMINADA ---
-    // implementation(libs.play.services.maps) // <-- Esta línea se ha borrado
+    // Compose UI
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material.icons.extended)
 
-    // --- Pruebas (Test) ---
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2024.05.00"))
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    debugImplementation("androidx.compose.ui:ui-tooling")
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
+    // Lifecycle & Navigation
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.navigation.compose)
 
-    // ---- Dependencias de tu Proyecto (Huerto Hogar) ----
+    // Coroutines
+    implementation(libs.kotlinx.coroutines.android)
 
-    // Navigation
-    implementation("androidx.navigation:navigation-compose:2.7.7")
+    // Coil
+    implementation(libs.coil.compose)
+    implementation(libs.coil.gif)
 
-    // ViewModel
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.1")
+    // Accompanist & Location
+    implementation("com.google.accompanist:accompanist-permissions:0.34.0")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
 
-    // Room (Base de Datos Local)
-    val room_version = "2.6.1"
-    implementation("androidx.room:room-runtime:$room_version")
-    implementation("androidx.room:room-ktx:$room_version")
-    ksp("androidx.room:room-compiler:$room_version")
+    // Room
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
 
-    // DataStore (Para SessionManager)
     implementation("androidx.datastore:datastore-preferences:1.1.1")
 
-    dependencies {
-        // ... (otras dependencias)
 
-        // Google Play Services (Para el GPS)
-        implementation("com.google.android.gms:play-services-location:21.3.0")
+    // ============ TESTING ============
 
-        // Accompanist (Manejo de Permisos)
-        implementation("com.google.accompanist:accompanist-permissions:0.34.0")
+    // Unit Tests (Local)
+    testImplementation(libs.junit)
+    // --- NUEVAS DEPENDENCIAS AÑADIDAS ---
+    testImplementation(libs.mockk)              // Para crear Mocks
+    testImplementation(libs.kotest.assertions)  // Para aserciones legibles (shouldBe)
+    testImplementation(libs.kotlinx.coroutines.test) // Para probar corutinas (runTest)
 
-        // implementation("org.osmdroid:osmdroid-compose:1.0.0")
+    // Android Instrumented Tests - TODAS LAS VERSIONES 1.6.x
+    androidTestImplementation("androidx.test:core:1.6.1")
+    androidTestImplementation("androidx.test:core-ktx:1.6.1")
+    androidTestImplementation("androidx.test:runner:1.6.2")
+    androidTestImplementation("androidx.test:rules:1.6.1")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
 
-        // 2. MANTENEMOS ESTA LÍNEA, que contiene GeoPoint y es estable:
-        implementation("org.osmdroid:osmdroid-android:6.1.18")
+    // Espresso
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
 
-    }
+    // UI Automator
+    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
+
+    // Test Orchestrator
+    androidTestUtil("androidx.test:orchestrator:1.5.0")
+
+    // Retrofit y Gson para consumir API
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+
+    // Compose Testing
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
+    debugImplementation(libs.androidx.compose.ui.tooling)
 }

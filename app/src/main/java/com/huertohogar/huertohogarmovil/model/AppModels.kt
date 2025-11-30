@@ -1,4 +1,4 @@
-package com.huertohogar.model
+package com.huertohogar.huertohogarmovil.model
 
 import androidx.room.Embedded
 import androidx.room.Entity
@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
 import androidx.room.Relation
 
 /**
- * Entidad que representa a un usuario en la base de datos.
+ * Entidad que representa a un usuario en la base de datos local.
  */
 @Entity(tableName = "usuarios")
 data class Usuario(
@@ -16,26 +16,26 @@ data class Usuario(
     val id: Int = 0,
     val nombre: String,
     val email: String,
-    val passwordHash: String // Almacenar un hash, no texto plano
+    val passwordHash: String // En una app real, esto sería un hash seguro
 )
 
 /**
- * Entidad que representa un producto.
- * Usamos los datos reales que proporcionaste.
+ * Entidad que representa un producto del huerto.
+ * Esta es la clase que te faltaba.
  */
 @Entity(tableName = "productos")
 data class Producto(
     @PrimaryKey
-    val id: String, // Usaremos IDs de texto (ej: "1", "2", etc.)
+    val id: String, // ID único del producto (puede venir de la API)
     val name: String,
     val description: String,
     val price: Int,
-    val imageName: String
+    val imageName: String // Nombre del recurso en drawable (ej: "tomate_cherry")
 )
 
 /**
  * Entidad para el carrito de compras.
- * Relaciona un usuario con un producto y una cantidad.
+ * Relaciona un usuario con un producto y guarda la cantidad.
  */
 @Entity(
     tableName = "carrito_items",
@@ -63,6 +63,10 @@ data class CarritoItem(
     val quantity: Int
 )
 
+/**
+ * Clase de relación para obtener el Carrito con los detalles del Producto.
+ * Esto es lo que usa la UI del Carrito para mostrar nombre y precio.
+ */
 data class CarritoItemConDetalles(
     @Embedded
     val carritoItem: CarritoItem,

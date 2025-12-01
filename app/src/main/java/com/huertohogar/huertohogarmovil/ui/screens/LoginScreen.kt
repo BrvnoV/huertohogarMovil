@@ -14,6 +14,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -129,7 +131,7 @@ fun LoginScreen(
                         label = "Correo Electrónico",
                         keyboardType = KeyboardType.Email,
                         imeAction = ImeAction.Next,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth().semantics { contentDescription = "email_input" }
                     )
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -140,7 +142,7 @@ fun LoginScreen(
                         keyboardType = KeyboardType.Password,
                         imeAction = ImeAction.Done,
                         onImeAction = onLoginClick,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth().semantics { contentDescription = "password_input" }
                     )
                     Spacer(modifier = Modifier.height(24.dp))
 

@@ -134,6 +134,7 @@ dependencies {
     // JUnit 5
     testImplementation(platform("org.junit:junit-bom:5.10.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
 
     // Unit Tests
     testImplementation(libs.mockk)

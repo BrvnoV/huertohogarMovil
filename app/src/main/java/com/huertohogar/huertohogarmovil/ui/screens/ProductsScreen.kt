@@ -137,8 +137,9 @@ fun ProductCard(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val sanitizedImageName = product.imageName.toLowerCase()
     val imageResId = context.resources.getIdentifier(
-        product.imageName,
+        sanitizedImageName, // <-- Usamos el nombre sanitizado
         "drawable",
         context.packageName
     )

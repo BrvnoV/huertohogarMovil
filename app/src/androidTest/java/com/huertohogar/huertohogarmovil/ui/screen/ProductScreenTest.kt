@@ -1,6 +1,8 @@
 package com.huertohogar.huertohogarmovil.uitest
 
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onFirst // <-- ¡Añade esta línea!
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.huertohogar.huertohogarmovil.model.Producto
@@ -39,7 +41,7 @@ class ProductsScreenTest {
         composeTestRule.setContent {
             HuertohogarMovilTheme {
                 ProductsScreen(
-                    products = initialState.products,
+                    products = fakeProducts,
                     snackbarHostState = androidx.compose.material3.SnackbarHostState(),
                     onProductClick = {},
                     onAddToCartClick = {}
@@ -55,12 +57,13 @@ class ProductsScreenTest {
     @Test
     fun productsScreen_debe_enviar_evento_de_anadir_al_carrito() {
         var lastEvent: ProductsEvent? = null
+        val expectedProduct = fakeProducts.first()
 
         // GIVEN: Carga la pantalla y captura el evento
         composeTestRule.setContent {
             HuertohogarMovilTheme {
                 ProductsScreen(
-                    products = initialState.products,
+                    products = fakeProducts,
                     snackbarHostState = androidx.compose.material3.SnackbarHostState(),
                     onProductClick = {},
                     onAddToCartClick = { product ->
@@ -71,18 +74,22 @@ class ProductsScreenTest {
             }
         }
 
-        // WHEN: El usuario presiona el botón 'Añadir'
-        // NOTA: Usamos el texto del botón que definimos en ProductCard ("Añadir")
-        composeTestRule.onNodeWithText("Añadir", ignoreCase = true).performClick()
+        // WHEN: El usuario presiona el botón 'Añadir'.
+        // Usamos onFirst() para resolver la ambigüedad y seleccionar el primer botón "Añadir".
+        composeTestRule.onAllNodesWithText("Añadir", ignoreCase = true)
+            .onFirst()
+            .performClick()
 
-        // THEN: El último evento capturado debe ser OnAddToCartClick y debe contener el producto correcto
+        // THEN:
+        // 1. El evento capturado debe ser el correcto
         assert(lastEvent is ProductsEvent.OnAddToCartClick) {
             "El evento esperado era OnAddToCartClick, pero fue $lastEvent"
         }
 
+        // 2. El producto dentro del evento debe ser el primer producto
         val addedProduct = (lastEvent as ProductsEvent.OnAddToCartClick).producto
-        assert(addedProduct.name == "Manzana Fuji") {
-            "El producto añadido debería ser Manzana Fuji (el primer elemento encontrado)."
+        assert(addedProduct.name == expectedProduct.name) {
+            "El producto añadido debería ser ${expectedProduct.name}, pero fue ${addedProduct.name}"
         }
     }
 }

@@ -9,7 +9,7 @@ import com.huertohogar.huertohogarmovil.model.Producto
 import com.huertohogar.huertohogarmovil.model.Usuario
 // --- IMPORTS NECESARIOS PARA EL CONSUMO REST ---
 import com.huertohogar.huertohogarmovil.network.HuertoApiService
-import com.huertohogar.huertohogarmovil.network.model.HuertoMapper // <-- Importar el objeto Mapper
+import com.huertohogar.huertohogarmovil.network.model.HuertoMapper
 // --- FIN DE IMPORTS ---
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -22,6 +22,9 @@ import retrofit2.HttpException
  */
 interface AppRepository {
     fun getAllProductos(): Flow<List<Producto>>
+
+    // --- NUEVO: Función para que el administrador pueda editar ---
+    suspend fun updateProduct(product: Producto)
 
     // --- Usuario ---
     fun getUsuarioByEmail(email: String): Flow<Usuario?>
@@ -45,10 +48,10 @@ interface AppRepository {
  */
 class AppRepositoryImpl(
     private val usuarioDao: UsuarioDao,
-    private val productoDao: ProductoDao,
+    private val productoDao: ProductoDao, // <-- Este DAO se usará para actualizar el producto
     private val carritoDao: CarritoDao,
     private val apiService: HuertoApiService,
-    private val huertoMapper: HuertoMapper // Se inyecta la instancia del Mapper
+    private val huertoMapper: HuertoMapper
 ) : AppRepository {
 
     // --- PRODUCTO: IMPLEMENTACIÓN CON RETROFIT (Carga desde el microservicio) ---
@@ -57,9 +60,7 @@ class AppRepositoryImpl(
             val response = apiService.getAllFruits()
 
             if (response.isSuccessful && response.body() != null) {
-                // LLAMADA CORREGIDA: Usamos fromResponseToDomain
                 val productosListos = huertoMapper.fromResponseToDomain(response.body()!!)
-
                 emit(productosListos)
             } else {
                 println("Error HTTP al obtener productos: ${response.code()}")
@@ -72,6 +73,13 @@ class AppRepositoryImpl(
             println("Error de conexión: ${e.message}")
             emit(emptyList())
         }
+    }
+
+    // --- NUEVA FUNCIÓN: ACTUALIZACIÓN DEL PRODUCTO POR EL ADMIN (Usa Room) ---
+    override suspend fun updateProduct(product: Producto) {
+        // La actualización se realiza directamente en la tabla de productos de Room.
+        // Asume que ProductoDao tiene un método para insertar/actualizar (generalmente llamado insert o update).
+        productoDao.insertProducto(product)
     }
 
     // --- LÓGICA DE ROOM (Usuario y Carrito se mantienen locales) ---

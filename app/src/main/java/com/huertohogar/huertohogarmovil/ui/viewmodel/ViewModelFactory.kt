@@ -12,7 +12,6 @@ import com.huertohogar.huertohogarmovil.repository.SessionManager
 class ViewModelFactory(
     private val repository: AppRepository,
     private val sessionManager: SessionManager
-    // El parámetro 'locationService' fue eliminado, ya que la lógica GPS es estática.
 ) : ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -46,11 +45,16 @@ class ViewModelFactory(
             @Suppress("UNCHECKED_CAST")
             return ProfileViewModel(repository, sessionManager) as T
         }
-
-        // Ubicacion (Utiliza el servicio estático, no necesita inyección)
         if (modelClass.isAssignableFrom(UbicacionViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
             return UbicacionViewModel() as T
+        }
+
+        // --- ¡NUEVO! Vista de Administración ---
+        if (modelClass.isAssignableFrom(AdminViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            // AdminViewModel solo necesita el repositorio para cargar y actualizar productos
+            return AdminViewModel(repository) as T
         }
 
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

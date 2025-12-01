@@ -16,7 +16,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class HuertohogarMovilApp : Application() {
 
-    // NOTA IMPORTANTE: URL de Fruityvice
+    // URL de Fruityvice
     private val BASE_URL = "https://www.fruityvice.com/"
 
     // --- 1. CONFIGURACIÓN DEL CLIENTE HTTP (Singleton) ---
@@ -37,13 +37,12 @@ class HuertohogarMovilApp : Application() {
             .build()
     }
 
-    // --- 3. CREACIÓN DEL API SERVICE ---
+    // 3. Creación del API Service
     val apiService: HuertoApiService by lazy {
         retrofit.create(HuertoApiService::class.java)
     }
 
-    // --- 4. CREACIÓN DEL MAPPER (Singleton) ---
-    // HuertoMapper es un objeto, no necesita ser inicializado con 'lazy'
+    // 4. Creación del Mapper (Objeto Singleton)
     private val huertoMapper: HuertoMapper = HuertoMapper
 
     // --- DEPENDENCIAS EXISTENTES (ROOM y Sesión) ---
@@ -53,13 +52,12 @@ class HuertohogarMovilApp : Application() {
 
     // --- 5. INYECCIÓN FINAL EN EL REPOSITORY ---
     val repository: AppRepository by lazy {
-        // Ahora se pasan los 5 argumentos requeridos por AppRepositoryImpl
         AppRepositoryImpl(
             usuarioDao = database.usuarioDao(),
             productoDao = database.productoDao(),
             carritoDao = database.carritoDao(),
-            apiService = apiService, // <-- DEPENDENCIA REST
-            huertoMapper = huertoMapper // <-- DEPENDENCIA MAPPER
+            apiService = apiService, // <-- Inyección de dependencia REST
+            huertoMapper = huertoMapper // <-- Inyección de dependencia Mapeador
         )
     }
 }

@@ -1,8 +1,8 @@
 package com.huertohogar.huertohogarmovil
 
-import org.junit.Test
 
-import org.junit.Assert.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import kotlin.test.Test
 
 /**
  * Example local unit test, which will execute on the development machine (host).

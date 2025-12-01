@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.huertohogar.huertohogarmovil" // Aseguramos que el namespace sea correcto
+    namespace = "com.huertohogar.huertohogarmovil" // Namespace Correcto
     compileSdk = 36
 
     defaultConfig {
@@ -14,12 +14,12 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.huertohogar.huertohogarmovil.HuertoTestRunner" // Usamos el Runner Custom
 
-        testInstrumentationRunnerArguments += mapOf(
+        /*testInstrumentationRunnerArguments += mapOf(
             "clearPackageData" to "true",
             "useTestStorageService" to "true"
-        )
+        )*/
 
         vectorDrawables {
             useSupportLibrary = true
@@ -37,13 +37,12 @@ android {
     }
 
     compileOptions {
-        // Elevamos a 11 o superior para compatibilidad con librerías modernas y Compose
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
 
     kotlinOptions {
-        jvmTarget = "11" // Elevamos a 11
+        jvmTarget = "11"
     }
 
     buildFeatures {
@@ -62,12 +61,11 @@ android {
         }
     }
 
-    // --- ¡AJUSTE CLAVE PARA JUNIT 5! ---
+    // --- AJUSTE CLAVE PARA JUNIT 5 ---
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
             isReturnDefaultValues = true
-            // Usamos el motor de ejecución de JUnit 5 (Jupiter)
             all {
                 it.useJUnitPlatform()
             }
@@ -78,6 +76,8 @@ android {
 
 dependencies {
     implementation(libs.play.services.maps)
+    // ELIMINADA: implementation(libs.play.services.maps) - Conflicto
+
     // Compose BOM
     val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
@@ -108,7 +108,8 @@ dependencies {
 
     // Accompanist & Location
     implementation("com.google.accompanist:accompanist-permissions:0.34.0")
-    implementation("com.google.android.gms:play-services-location:21.0.1")
+    // Versión actualizada para intentar evitar el error 16KB
+    implementation("com.google.android.gms:play-services-location:21.2.0")
 
     // Room
     implementation(libs.androidx.room.runtime)
@@ -116,19 +117,19 @@ dependencies {
     ksp(libs.androidx.room.compiler)
 
     //DataStore
-    implementation("androidx.datastore:datastore-preferences:1.1.1")
+    implementation("androidx.datastore:datastore-preferences:1.1.1") // Fuente del error 16KB
 
     //Loggin
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
-    // --- MAPAS: OPENSTREETMAP ---
+    // --- MAPAS: OPENSTREETMAP (Estable y Nativo) ---
     implementation("org.osmdroid:osmdroid-android:6.1.18")
 
     // ============ TESTING ============
 
     // JUnit 5 (BOM y Motor Principal)
     testImplementation(platform("org.junit:junit-bom:5.10.2"))
-    testImplementation("org.junit.jupiter:junit-jupiter") // Motor de Jupiter
+    testImplementation("org.junit.jupiter:junit-jupiter")
 
     // Unit Tests (Local) - MockK, Coroutines Test
     testImplementation(libs.mockk)
@@ -145,10 +146,11 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
     androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
-    androidTestUtil("androidx.test:orchestrator:1.5.0")
 
     // Compose Testing
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+
+    // [Línea conflictiva testImplementation(kotlin("test")) ELIMINADA]
 }

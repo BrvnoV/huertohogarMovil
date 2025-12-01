@@ -52,7 +52,7 @@ class CartViewModelTest {
         // 2. Configurar el Manager para el ID de Usuario
         every { mockSessionManager.currentUserId } returns flowOf(testUser)
 
-        // 3. Configurar el Repository para devolver una lista inicial (que se usará por defecto)
+        // 3. Configurar el Repository para devolver una lista NO VACÍA (para la inicialización del ViewModel)
         coEvery { mockRepository.getCarritoConDetalles(testUser) } returns flowOf(listOf(testItemDetails))
 
         // 4. Inicializar el ViewModel

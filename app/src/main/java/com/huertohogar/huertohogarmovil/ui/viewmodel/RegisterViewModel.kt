@@ -3,8 +3,8 @@ package com.huertohogar.huertohogarmovil.ui.viewmodel
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.huertohogar.huertohogarmovil.data.repository.AppRepository
-import com.huertohogar.model.Usuario
+import com.huertohogar.huertohogarmovil.repository.AppRepository
+import com.huertohogar.huertohogarmovil.model.Usuario
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

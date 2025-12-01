@@ -24,17 +24,16 @@ import androidx.compose.ui.res.painterResource // <-- Importado
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.huertohogar.huertohogarmovil.HuertoHogarApp
-import com.huertohogar.huertohogarmovil.R //
+import com.huertohogar.huertohogarmovil.HuertohogarMovilApp
+import com.huertohogar.huertohogarmovil.model.CarritoItemConDetalles
 import com.huertohogar.huertohogarmovil.ui.viewModelFactory
 import com.huertohogar.huertohogarmovil.ui.viewmodel.CartEvent
 import com.huertohogar.huertohogarmovil.ui.viewmodel.CartState
 import com.huertohogar.huertohogarmovil.ui.viewmodel.CartUiEvent
 import com.huertohogar.huertohogarmovil.ui.viewmodel.CartViewModel
 import com.huertohogar.huertohogarmovil.ui.viewmodel.ViewModelFactory
-import com.huertohogar.model.CarritoItemConDetalles
 import kotlinx.coroutines.flow.collectLatest
-
+import com.huertohogar.huertohogarmovil.R
 @Composable
 fun CartRoute(
     onNavigateToCheckout: () -> Unit,

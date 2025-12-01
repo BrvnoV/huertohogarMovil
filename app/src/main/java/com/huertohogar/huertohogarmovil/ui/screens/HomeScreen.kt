@@ -23,13 +23,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.huertohogar.huertohogarmovil.HuertoHogarApp
+import com.huertohogar.huertohogarmovil.HuertohogarMovilApp
 import com.huertohogar.huertohogarmovil.R
 import com.huertohogar.huertohogarmovil.ui.viewModelFactory
 import com.huertohogar.huertohogarmovil.ui.viewmodel.HomeState
 import com.huertohogar.huertohogarmovil.ui.viewmodel.HomeViewModel
 import com.huertohogar.huertohogarmovil.ui.viewmodel.ViewModelFactory
-import com.huertohogar.model.Producto
+import com.huertohogar.huertohogarmovil.model.Producto
 
 // --- FIN DE IMPORTS ---
 

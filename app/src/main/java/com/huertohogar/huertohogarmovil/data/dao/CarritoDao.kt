@@ -1,8 +1,8 @@
 package com.huertohogar.huertohogarmovil.data.dao
 
 import androidx.room.*
-import com.huertohogar.model.CarritoItem
-import com.huertohogar.model.CarritoItemConDetalles
+import com.huertohogar.huertohogarmovil.model.CarritoItem
+import com.huertohogar.huertohogarmovil.model.CarritoItemConDetalles
 import kotlinx.coroutines.flow.Flow
 
 @Dao

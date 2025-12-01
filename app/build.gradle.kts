@@ -5,24 +5,25 @@ plugins {
 }
 
 android {
-    namespace = "com.huertohogar.huertohogarmovil" // Namespace Correcto
+    namespace = "com.huertohogar.huertohogarmovil"
     compileSdk = 36
 
     defaultConfig {
         applicationId = "com.huertohogar.huertohogarmovil"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 34 // Reducido temporalmente de 36 a 34
         versionCode = 1
         versionName = "1.0"
-        testInstrumentationRunner = "com.huertohogar.huertohogarmovil.HuertoTestRunner" // Usamos el Runner Custom
-
-        /*testInstrumentationRunnerArguments += mapOf(
-            "clearPackageData" to "true",
-            "useTestStorageService" to "true"
-        )*/
+        testInstrumentationRunner = "com.huertohogar.huertohogarmovil.HuertoTestRunner"
 
         vectorDrawables {
             useSupportLibrary = true
+        }
+
+        // Forzar soporte para 16KB page sizes
+        ndk {
+            //noinspection ChromeOsAbiSupport
+            abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
         }
     }
 
@@ -59,9 +60,15 @@ android {
             excludes += "/META-INF/LICENSE.md"
             excludes += "/META-INF/LICENSE-notice.md"
         }
+
+        // CONFIGURACIÓN CRÍTICA PARA 16KB
+        jniLibs {
+            useLegacyPackaging = false
+            // Forzar keepDebugSymbols para todas las arquitecturas
+            keepDebugSymbols += listOf("**/*.so")
+        }
     }
 
-    // --- AJUSTE CLAVE PARA JUNIT 5 ---
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
@@ -71,12 +78,10 @@ android {
             }
         }
     }
-    // ------------------------------------
 }
 
 dependencies {
     implementation(libs.play.services.maps)
-    // ELIMINADA: implementation(libs.play.services.maps) - Conflicto
 
     // Compose BOM
     val composeBom = platform(libs.androidx.compose.bom)
@@ -108,35 +113,34 @@ dependencies {
 
     // Accompanist & Location
     implementation("com.google.accompanist:accompanist-permissions:0.34.0")
-    // Versión actualizada para intentar evitar el error 16KB
-    implementation("com.google.android.gms:play-services-location:21.2.0")
+    implementation("com.google.android.gms:play-services-location:21.3.0") // Actualizado
 
     // Room
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
-    //DataStore
-    implementation("androidx.datastore:datastore-preferences:1.1.1") // Fuente del error 16KB
+    // DataStore - VERSIÓN ACTUALIZADA CON SOPORTE 16KB
+    implementation("androidx.datastore:datastore-preferences:1.1.2")
 
-    //Loggin
+    // Logging
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
-    // --- MAPAS: OPENSTREETMAP (Estable y Nativo) ---
+    // Mapas: OpenStreetMap
     implementation("org.osmdroid:osmdroid-android:6.1.18")
 
     // ============ TESTING ============
 
-    // JUnit 5 (BOM y Motor Principal)
+    // JUnit 5
     testImplementation(platform("org.junit:junit-bom:5.10.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
 
-    // Unit Tests (Local) - MockK, Coroutines Test
+    // Unit Tests
     testImplementation(libs.mockk)
     testImplementation(libs.kotest.assertions)
     testImplementation(libs.kotlinx.coroutines.test)
 
-    // Retrofit y Gson (Para testing de API)
+    // Retrofit y Gson
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
 
@@ -151,6 +155,5 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
-
-    // [Línea conflictiva testImplementation(kotlin("test")) ELIMINADA]
+    testImplementation(kotlin("test"))
 }

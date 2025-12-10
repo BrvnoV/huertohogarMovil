@@ -68,15 +68,11 @@ abstract class AppDatabase : RoomDatabase() {
          * Inserta la lista inicial de productos del huerto
          * (Usa los nombres de los archivos en 'drawable')
          */
-        suspend fun prePopulateProductos(productoDao: ProductoDao) {
+/*        suspend fun prePopulateProductos(productoDao: ProductoDao) {
             val productosIniciales = listOf(
                 Producto(
-                    id = "1",
-                    name = "Tomate Cherry (Bandeja 250g)",
-                    description = "Pequeños tomates dulces...",
-                    price = 2490,
-                    imageName = "tomate_cherry"
-                ),
+                    id = "1", name = "Tomate Cherry (Bandeja 250g)", description = "Pequeños tomates dulces...", price = 2490,
+                    imageName = "tomate_cherry"),
 
                 Producto(id = "2", name = "Lechuga Hidropónica Costina (Unidad)", description = "Lechuga fresca y crujiente...", price = 1390,
                     imageName = "lechuga"),
@@ -104,8 +100,90 @@ abstract class AppDatabase : RoomDatabase() {
 
                 Producto(id = "10", name = "Zapallo Italiano (Zucchini)", description = "Zucchini tierno y versátil...", price = 990,
                     imageName = "zapallo_italiano")
+            )*/
+        suspend fun prePopulateProductos(productoDao: ProductoDao) {
+            val productosIniciales = listOf(
+                Producto(
+                    id = "5",
+                    name = "Tomate Cherry (Bandeja 250g)",
+                    description = "Tomates jugosos y bajos en calorías, ideales para ensaladas.",
+                    price = 2490,
+                    imageName = "tomate_cherry"
+                ),
+                Producto(
+                    id = "3",
+                    name = "Frutillas Orgánicas (Bandeja 500g)",
+                    description = "Frutillas frescas y dulces, ricas en antioxidantes.",
+                    price = 3990,
+                    imageName = "frutillas"
+                ),
+                Producto(
+                    id = "26",
+                    name = "Limón Sutil (Malla 1kg)",
+                    description = "Limones refrescantes y cítricos, perfectos para bebidas.",
+                    price = 2290,
+                    imageName = "limon"
+                ),
+                Producto(
+                    id = "84",
+                    name = "Palta Hass (Malla 1kg)",
+                    description = "Aguacates cremosos y nutritivos, altos en grasas saludables.",
+                    price = 5990,
+                    imageName = "palta_hass"
+                ),
+                Producto(
+                    id = "33",
+                    name = "Arándanos Premium (Bandeja 125g)",
+                    description = "Arándanos firmes y bajos en azúcar, ideales para snacks.",
+                    price = 2190,
+                    imageName = "arandanos"
+                ),
+                Producto(
+                    id = "44",
+                    name = "Lima Fresca (Malla 500g)",
+                    description = "Limas ácidas y vibrantes, excelentes para marinados.",
+                    price = 1890,
+                    imageName = "lima"
+                ),
+                Producto(
+                    id = "1",
+                    name = "Banana Cavendish (Racimo 1kg)",
+                    description = "Bananas energéticas y ricas en potasio, perfectas para el desayuno.",
+                    price = 1490,
+                    imageName = "banana"
+                ),
+                Producto(
+                    id = "6",
+                    name = "Manzana Roja (Bolsa 6 unidades)",
+                    description = "Manzanas crujientes y dulces, fuente de fibra natural.",
+                    price = 2790,
+                    imageName = "manzana"
+                ),
+                Producto(
+                    id = "4",
+                    name = "Pera Williams (Unidad)",
+                    description = "Peras suaves y jugosas, ideales para postres o crudas.",
+                    price = 1990,
+                    imageName = "pera"
+                ),
+                Producto(
+                    id = "2",
+                    name = "Naranja Valencia (Bolsa 1kg)",
+                    description = "Naranjas frescas y vitaminadas, perfectas para jugos.",
+                    price = 1690,
+                    imageName = "naranja"
+                )
             )
-            productoDao.insertAll(productosIniciales)
+            // ... resto del código para insertar en Dao
+
+            try {
+                productoDao.insertAll(productosIniciales)
+            } catch (e: Exception) {
+                // Manejo de error: Loguea el error para debug, pero no crashea la app
+                // Puedes retornar un Result o un booleano si necesitas indicar éxito/fallo
+                android.util.Log.e("PrePopulateError", "Error al poblar productos iniciales: ${e.message}", e)
+                // Opcional: Reintentar o notificar al usuario via callback/event
+            }
         }
     }
 }

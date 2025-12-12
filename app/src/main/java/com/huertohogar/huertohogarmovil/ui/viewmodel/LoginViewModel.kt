@@ -15,7 +15,8 @@ import kotlinx.coroutines.launch
 data class LoginState(
     val isLoading: Boolean = false,
     val error: String? = null,
-    val loginSuccess: Boolean = false
+    val loginSuccess: Boolean = false,
+    val isAdminLogin: Boolean = false
 )
 
 // Eventos que la UI puede enviar al ViewModel
@@ -46,6 +47,12 @@ class LoginViewModel(
     private fun login(email: String, pass: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
+
+            // Hardcoded Admin Check
+            if (email == "admin@duoc.cl" && pass == "admin") {
+                _uiState.update { it.copy(isLoading = false, loginSuccess = true, isAdminLogin = true) }
+                return@launch
+            }
 
             // Obtenemos el primer (y único) usuario que coincida
             val usuario = repository.getUsuarioByEmail(email).firstOrNull()

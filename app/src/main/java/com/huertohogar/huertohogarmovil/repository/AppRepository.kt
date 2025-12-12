@@ -10,11 +10,13 @@ import com.huertohogar.huertohogarmovil.model.Usuario
 // --- IMPORTS NECESARIOS PARA EL CONSUMO REST ---
 import com.huertohogar.huertohogarmovil.network.HuertoApiService
 import com.huertohogar.huertohogarmovil.network.model.HuertoMapper
-// --- FIN DE IMPORTS ---
+import com.huertohogar.huertohogarmovil.network.model.FruitDto
+import com.huertohogar.huertohogarmovil.network.model.toProducto
+// --- NUEVOS IMPORTS ---
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import java.lang.Exception
-import retrofit2.HttpException
+import kotlinx.coroutines.withContext
+import kotlin.Result
 
 /**
  * Interfaz del Repositorio (El Contrato).
@@ -25,6 +27,9 @@ interface AppRepository {
 
     // --- NUEVO: Función para que el administrador pueda editar ---
     suspend fun updateProduct(product: Producto)
+
+    // --- NUEVO: Sync desde Fruityvice ---
+    suspend fun syncProductosFromFruityvice(): Result<Unit>
 
     // --- Usuario ---
     fun getUsuarioByEmail(email: String): Flow<Usuario?>
@@ -48,38 +53,41 @@ interface AppRepository {
  */
 class AppRepositoryImpl(
     private val usuarioDao: UsuarioDao,
-    private val productoDao: ProductoDao, // <-- Este DAO se usará para actualizar el producto
+    private val productoDao: ProductoDao,
     private val carritoDao: CarritoDao,
     private val apiService: HuertoApiService,
     private val huertoMapper: HuertoMapper
 ) : AppRepository {
 
-    // --- PRODUCTO: IMPLEMENTACIÓN CON RETROFIT (Carga desde el microservicio) ---
-    override fun getAllProductos(): Flow<List<Producto>> = flow {
-        try {
-            val response = apiService.getAllFruits()
+    // --- PRODUCTO: AHORA DE ROOM (cacheado) ---
+    override fun getAllProductos(): Flow<List<Producto>> = productoDao.getAllProductos()
 
-            if (response.isSuccessful && response.body() != null) {
-                val productosListos = huertoMapper.fromResponseToDomain(response.body()!!)
-                emit(productosListos)
-            } else {
-                println("Error HTTP al obtener productos: ${response.code()}")
-                emit(emptyList())
-            }
-        } catch (e: HttpException) {
-            println("Error de red o servidor: ${e.code()}")
-            emit(emptyList())
-        } catch (e: Exception) {
-            println("Error de conexión: ${e.message}")
-            emit(emptyList())
-        }
+    // --- ACTUALIZACIÓN DEL PRODUCTO POR EL ADMIN (Usa Room) ---
+    override suspend fun updateProduct(product: Producto) {
+        productoDao.insertProducto(product)
     }
 
-    // --- NUEVA FUNCIÓN: ACTUALIZACIÓN DEL PRODUCTO POR EL ADMIN (Usa Room) ---
-    override suspend fun updateProduct(product: Producto) {
-        // La actualización se realiza directamente en la tabla de productos de Room.
-        // Asume que ProductoDao tiene un método para insertar/actualizar (generalmente llamado insert o update).
-        productoDao.insertProducto(product)
+    // --- NUEVO: Sync desde Fruityvice (fetch + save en DB) ---
+    override suspend fun syncProductosFromFruityvice(): Result<Unit> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            val response = apiService.getAllFruits()
+            if (response.isSuccessful && response.body() != null) {
+                val frutas = response.body()!!  // List<FruitDto>
+                val idsExistentes = productoDao.getAllIds()  // Chequea duplicados
+                val nuevos = frutas
+                    .mapNotNull { it.toProducto() }
+                    .filter { !idsExistentes.contains(it.id) }  // Solo nuevos
+
+                if (nuevos.isNotEmpty()) {
+                    productoDao.insertAllIgnoringConflicts(nuevos)
+                }
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("Error API: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)  // Fallback a hardcoded
+        }
     }
 
     // --- LÓGICA DE ROOM (Usuario y Carrito se mantienen locales) ---

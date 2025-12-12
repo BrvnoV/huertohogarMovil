@@ -1,5 +1,6 @@
 package com.huertohogar.huertohogarmovil.ui.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.huertohogar.huertohogarmovil.repository.AppRepository
@@ -81,6 +82,26 @@ class ProductsViewModel(
 
             // 5. Enviar evento a la UI para mostrar confirmación
             _eventFlow.emit(ProductsUiEvent.ShowSnackbar("${producto.name} agregado al carrito!"))
+
+        }
+    }
+
+    // NUEVO: Llama sync en init para fetch de API y cache en DB (mezcla con hardcoded)
+    init {
+        viewModelScope.launch {
+            try {
+                val result = repository.syncProductosFromFruityvice()
+                if (result.isSuccess) {
+                    Log.d("ProductsVM", "Sync de API exitoso: productos cargados desde Fruityvice")
+                } else {
+                    Log.e("ProductsVM", "Sync de API falló: ${result.exceptionOrNull()?.message}")
+                    // Opcional: Emite snackbar para usuario
+                    // _eventFlow.emit(ProductsUiEvent.ShowSnackbar("No se pudieron cargar productos nuevos. Usando locales."))
+                }
+            } catch (e: Exception) {
+                Log.e("ProductsVM", "Error inesperado en sync: ${e.message}")
+            }
+            // UI se actualiza automáticamente via Flow de DB
         }
     }
 }

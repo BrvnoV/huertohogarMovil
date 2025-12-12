@@ -157,4 +157,10 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
     testImplementation(kotlin("test"))
+
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+// O moshi si usas eso
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+// Para logs
 }

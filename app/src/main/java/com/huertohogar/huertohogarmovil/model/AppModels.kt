@@ -33,6 +33,22 @@ data class Producto(
     val imageName: String // Nombre del recurso en drawable (ej: "tomate_cherry")
 )
 
+data class FrutaApi(
+    val name: String,
+    val id: Int,
+    val family: String,
+    val order: String,
+    val genus: String,
+    val nutritions: Nutritions
+)
+
+data class Nutritions(
+    val calories: Double,
+    val fat: Double,
+    val sugar: Double,
+    val carbohydrates: Double,
+    val protein: Double
+)
 /**
  * Entidad para el carrito de compras.
  * Relaciona un usuario con un producto y guarda la cantidad.

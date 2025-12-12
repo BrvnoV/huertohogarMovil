@@ -36,4 +36,12 @@ interface ProductoDao {
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertProducto(producto: Producto)
+
+    // NUEVO: Obtiene todos los IDs existentes (para chequear duplicados en sync)
+    @Query("SELECT id FROM productos")
+    suspend fun getAllIds(): List<String>
+
+    // NUEVO: Insert con IGNORE para no sobrescribir locales si ID existe
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertAllIgnoringConflicts(productos: List<Producto>)
 }
